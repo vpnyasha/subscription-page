@@ -12,6 +12,11 @@
     /* Над декоративными фигурами в body::before / body::after. */
     position: relative;
     z-index: 2;
+
+    /* Страница рисуется под вырезом (viewport-fit=cover), поэтому содержимое
+       отодвигаем от статус-бара и нижней панели сами. */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .main {

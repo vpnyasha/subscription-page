@@ -1,6 +1,5 @@
 import {
     ActionIcon,
-    Badge,
     Box,
     Card,
     CopyButton,
@@ -104,14 +103,16 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
     return (
         <Card p={{ base: 'sm', xs: 'md', sm: 'lg', md: 'xl' }} radius="lg">
             <Stack gap="md">
-                <Group gap="sm" justify="space-between">
+                {/* Счётчик стоит вплотную к заголовку: в правом углу карточки
+                    он налезал на орнамент (см. card.module.css). */}
+                <Group align="center" gap="xs" wrap="nowrap">
                     <Title c="var(--mantine-color-text)" fw={600} order={4}>
                         {t(baseTranslations.connectionKeysHeader)}
                     </Title>
                     {parsedLinks.length > 1 && (
-                        <Badge color="kimiko" size="lg" variant="light">
+                        <Text c="dimmed" fw={600} size="lg">
                             {parsedLinks.length}
-                        </Badge>
+                        </Text>
                     )}
                 </Group>
 

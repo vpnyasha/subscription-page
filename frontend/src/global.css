@@ -33,20 +33,24 @@
     --kimiko-decor-left-filter: brightness(1.07) saturate(0.95);
     --kimiko-decor-right-opacity: 1;
     --kimiko-decor-right-filter: none;
+
+    /* Отступ от шапки до первой карточки и зазор между карточками. */
+    --kimiko-content-top: var(--mantine-spacing-xl);
+    --kimiko-stack-gap: var(--mantine-spacing-xl);
 }
 
 html,
 body {
-    min-height: 100vh;
-
-    /* Готовая подложка: сетка, цветы и линии по краям, центр под контент. */
-    background: var(--mantine-color-body) url('/assets/decor/background.webp') no-repeat center /
-        cover fixed;
+    min-height: 100svh;
+    background: var(--mantine-color-body);
     position: relative;
+
+    /* Декор уходит за край экрана — не даём ему растянуть страницу вбок. */
+    overflow-x: clip;
 }
 
 #root {
-    height: 100vh;
+    min-height: 100svh;
 }
 
 /* Декор рисуется под контентом и не перехватывает клики. */
@@ -54,8 +58,10 @@ body::before,
 body::after {
     content: '';
     position: fixed;
-    bottom: var(--kimiko-decor-bottom, 0);
-    z-index: 0;
+    bottom: 0;
+
+    /* Выше слоя подложки (.animated-background), но ниже контента. */
+    z-index: 1;
     height: var(--kimiko-decor-height);
     pointer-events: none;
     background-repeat: no-repeat;
@@ -94,48 +100,58 @@ body::after {
  */
 @media (max-width: 1100px) {
     :root {
-        /* Приподнята над низом: внизу её полностью закрывали бы карточки. */
-        --kimiko-decor-bottom: 14vh;
-        --kimiko-decor-height: 52vh;
-        --kimiko-decor-left-width: min(48vw, 300px);
-        --kimiko-decor-offset: -20px;
-        --kimiko-decor-right-width: min(48vw, 300px);
+        --kimiko-decor-height: 62svh;
+        --kimiko-decor-left-width: min(62vw, 340px);
+        --kimiko-decor-offset: -40px;
+        --kimiko-decor-right-width: min(62vw, 340px);
 
         /* Колонка занимает почти всю ширину, поэтому фигуру видно только
            сквозь карточки — делаем их заметно прозрачнее. */
         --kimiko-surface: rgba(242, 238, 231, 0.62);
         --kimiko-surface-raised: rgba(247, 244, 239, 0.45);
+
+        --kimiko-content-top: var(--mantine-spacing-lg);
+        --kimiko-stack-gap: var(--mantine-spacing-lg);
     }
 
+    /*
+     * Фигура становится частью страницы и уезжает вместе с контентом.
+     * Фиксированная она дёргалась: мобильные браузеры двигают нижнюю границу
+     * вьюпорта вслед за панелью адреса.
+     */
+    /* Фоновые фигуры уступают место маленьким в углах карточек
+       (см. card.module.css). */
     body::before,
     body::after {
         display: none;
     }
-
-    body[data-kimiko-decor='left']::before,
-    body[data-kimiko-decor='right']::after {
-        display: block;
-    }
 }
 
+/*
+ * Подложка вынесена на отдельный фиксированный слой вместо
+ * background-attachment: fixed на body: в мобильных браузерах он либо не
+ * работает, либо перерисовывается при каждом движении панели адреса.
+ * Высота в lvh, чтобы слой перекрывал экран и при спрятанной панели.
+ */
 .animated-background {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
+    height: 100lvh;
     pointer-events: none;
     z-index: 0;
+    background: url('/assets/decor/background.webp') no-repeat center center / cover;
 
-    /* Подсветка убрана: рисунок фона уже задаёт всю фактуру страницы. */
-    background: none;
+    /* Свой композитный слой — браузер не перерисовывает фон при скролле. */
+    transform: translateZ(0);
 }
 
 /* Шапка живёт внутри того же контейнера, что и карточки, поэтому её края
    совпадают с ними, а не растягиваются на всю колонку. */
 .header-wrapper {
     position: sticky;
-    top: var(--mantine-spacing-md);
+    top: calc(env(safe-area-inset-top) + var(--mantine-spacing-md));
     z-index: 100;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

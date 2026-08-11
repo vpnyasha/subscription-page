@@ -15,6 +15,7 @@ import {
 } from '@shared/utils/config-parser'
 import { InfoBlockShared } from '@shared/ui/info-block/info-block.shared'
 import { useSubscription } from '@entities/subscription-info-store'
+import { ACCOUNT_LABEL } from '@shared/constants'
 import { useTranslation } from '@shared/hooks'
 
 interface IProps {
@@ -115,7 +116,7 @@ export const SubscriptionInfoExpandedWidget = ({ isMobile }: IProps) => {
                     <InfoBlockShared
                         color="blue"
                         icon={<IconUserScan size={16} />}
-                        title={t(baseTranslations.name)}
+                        title={ACCOUNT_LABEL}
                         value={user.username}
                     />
 

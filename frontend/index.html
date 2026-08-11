@@ -5,9 +5,17 @@
         <meta name="robots" content="noindex, nofollow" />
         <meta name="color-scheme" content="light only" />
         <meta name="theme-color" content="#E8E2D8" />
+
+        <!-- Полноэкранный режим, когда страницу добавили на домашний экран:
+             в обычном браузере статус-бар iOS скрыть нельзя -->
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <!-- viewport-fit=cover: страница заходит под вырез и статус-бар,
+             отступы возвращаем через env(safe-area-inset-*) -->
         <meta
             name="viewport"
-            content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
+            content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no, viewport-fit=cover"
         />
         <!-- Основная иконка лежит на CDN, локальные файлы остаются запасными -->
         <link

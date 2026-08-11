@@ -3,6 +3,7 @@ import { Box, Group, SimpleGrid, Stack, Text, ThemeIcon } from '@mantine/core'
 
 import { useSubscription } from '@entities/subscription-info-store'
 import { formatDate } from '@shared/utils/config-parser'
+import { ACCOUNT_LABEL } from '@shared/constants'
 import { useTranslation } from '@shared/hooks'
 
 import classes from './subscription-info-cards.module.css'
@@ -84,7 +85,7 @@ export const SubscriptionInfoCardsWidget = ({ isMobile: _ }: IProps) => {
             <CardItem
                 color="blue"
                 icon={<IconUserScan size={18} />}
-                label={t(baseTranslations.name)}
+                label={ACCOUNT_LABEL}
                 value={user.username}
             />
 

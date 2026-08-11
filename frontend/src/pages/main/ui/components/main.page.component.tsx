@@ -94,11 +94,17 @@ export const MainPageComponent = ({ isMobile, platform }: IMainPageComponentProp
 
             <Container
                 maw={1200}
+                pb="xl"
                 px={{ base: 'md', sm: 'lg', md: 'xl' }}
-                py="xl"
-                style={{ position: 'relative', zIndex: 1 }}
+                style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    /* Зазор под шапкой: на узком экране в него попадает лицо
+                       декоративной фигуры (см. --kimiko-content-top). */
+                    paddingTop: 'var(--kimiko-content-top)'
+                }}
             >
-                <Stack gap="xl">
+                <Stack gap="var(--kimiko-stack-gap)">
                     {SubscriptionInfoBlockRenderer && (
                         <SubscriptionInfoBlockRenderer isMobile={isMobile} />
                     )}
