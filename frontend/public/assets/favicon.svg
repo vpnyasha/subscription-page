@@ -1,8 +1,19 @@
-<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="6" fill="#1e293b"/>
-  <path d="M6 16C6 16 10 10 16 16C22 22 26 16 26 16" 
-        stroke="#3b82f6" 
-        stroke-width="4" 
-        stroke-linecap="round"
-        fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Flower">
+  <title>Flower</title>
+  <defs>
+    <g id="p">
+      <path fill="#6B141A" d="M0-246C-18-225-44-200-58-178C-70-158-77-139-77-118C-77-68-46-18 0-18C46-18 77-68 77-118C77-139 70-158 58-178C44-200 18-225 0-246Z"/>
+      <path fill="#7E1B1E" d="M0-228C-21-198-45-168-56-138C-68-106-64-56-40-24C-23-70-9-122-5-164C-3-192-1-212 0-228Z"/>
+    </g>
+  </defs>
+  <g transform="translate(256 262) scale(1.06)">
+      <use href="#p"/>
+      <use href="#p" transform="rotate(72)"/>
+      <use href="#p" transform="rotate(144)"/>
+      <use href="#p" transform="rotate(216)"/>
+      <use href="#p" transform="rotate(288)"/>
+  </g>
+  <circle cx="256" cy="272" r="76" fill="#4C0E11"/>
+  <circle cx="256" cy="276" r="46" fill="#F4EDE5"/>
+  <circle cx="241" cy="262" r="14" fill="#FFFFFF" opacity=".75"/>
 </svg>

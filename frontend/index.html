@@ -22,16 +22,22 @@
             name="viewport"
             content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
-        <!-- Основная иконка лежит на CDN, локальные файлы остаются запасными -->
+        <!-- Иконки лежат в корне, а НЕ в /assets: этот префикс бэкенд закрывает
+             кукой session (check-assets-cookie.middleware.ts) и без неё рвёт
+             соединение, а кука живёт 30 минут. Safari качает иконки отдельно от
+             страницы, часто позже — обрыв, и во вкладке остаётся старая. -->
+        <link rel="icon" sizes="32x32" href="/favicon.ico" />
+        <!-- SVG читают Chrome и Firefox; Safari (macOS и iOS) их не понимает
+             вообще и берёт .ico выше — поэтому он обязателен.
+             Сам SVG на CDN, как и логотип: меняется без пересборки образа -->
         <link
             rel="icon"
             type="image/svg+xml"
             href="https://ru5p7eussw.cdn.twcstorage.ru/flower.svg"
         />
-        <link rel="icon" sizes="any" href="/assets/favicon.ico" />
-        <link rel="icon" sizes="32x32" type="image/png" href="/assets/favicon-32x32.png" />
-        <link rel="icon" sizes="16x16" type="image/png" href="/assets/favicon-16x16.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon-180x180.png" />
+        <!-- Домашний экран iOS: 180×180 и обязательно без прозрачности,
+             иначе Safari подложит под цветок чёрный фон -->
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
         <link rel="preconnect" crossorigin="anonymous" href="https://fonts.googleapis.com" />
         <link rel="preconnect" crossorigin="anonymous" href="https://fonts.gstatic.com" />
