@@ -70,6 +70,27 @@
     height: 100%;
 }
 
+/*
+ * Иконки приходят из конфига панели со своими цветами — на светлой теме они
+ * теряются. Перекрашиваем в цвет текста, не трогая элементы с fill/stroke none,
+ * иначе у контурных иконок появляется лишняя заливка.
+ */
+.bgIcon svg,
+.configIcon svg {
+    color: var(--mantine-color-text);
+    fill: currentcolor;
+}
+
+.bgIcon svg [fill]:not([fill='none']),
+.configIcon svg [fill]:not([fill='none']) {
+    fill: currentcolor !important;
+}
+
+.bgIcon svg [stroke]:not([stroke='none']),
+.configIcon svg [stroke]:not([stroke='none']) {
+    stroke: currentcolor !important;
+}
+
 .bgIconActive {
     opacity: 0.18;
 }

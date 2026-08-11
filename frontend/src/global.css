@@ -30,7 +30,7 @@
      * разметку — например saturate(0.6) и opacity 0.55.
      */
     --kimiko-decor-left-opacity: 1;
-    --kimiko-decor-left-filter: none;
+    --kimiko-decor-left-filter: brightness(1.07) saturate(0.95);
     --kimiko-decor-right-opacity: 1;
     --kimiko-decor-right-filter: none;
 }
