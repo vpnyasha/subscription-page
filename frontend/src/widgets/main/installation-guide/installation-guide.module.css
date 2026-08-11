@@ -71,23 +71,21 @@
 }
 
 /*
- * Иконки приходят из конфига панели со своими цветами — на светлой теме они
- * теряются. Перекрашиваем в цвет текста, не трогая элементы с fill/stroke none,
- * иначе у контурных иконок появляется лишняя заливка.
+ * Перекраска только для подложки в кнопке приложения: она рисуется силуэтом,
+ * и собственные цвета иконки из панели там мешают. В кнопках-ссылках и в
+ * селекторе платформы иконки остаются как есть — заливка одним цветом
+ * превращает многослойные логотипы в чёрный квадрат.
  */
-.bgIcon svg,
-.configIcon svg {
+.bgIcon svg {
     color: var(--mantine-color-text);
     fill: currentcolor;
 }
 
-.bgIcon svg [fill]:not([fill='none']),
-.configIcon svg [fill]:not([fill='none']) {
+.bgIcon svg [fill]:not([fill='none']) {
     fill: currentcolor !important;
 }
 
-.bgIcon svg [stroke]:not([stroke='none']),
-.configIcon svg [stroke]:not([stroke='none']) {
+.bgIcon svg [stroke]:not([stroke='none']) {
     stroke: currentcolor !important;
 }
 

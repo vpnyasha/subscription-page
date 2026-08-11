@@ -131,7 +131,6 @@ export const InstallationGuideConnector = (props: IProps) => {
                         key={index}
                         leftSection={
                             <span
-                                className={classes.configIcon}
                                 dangerouslySetInnerHTML={{
                                     __html: getIconFromLibrary(button.svgIconKey, svgLibrary)
                                 }}
@@ -167,7 +166,6 @@ export const InstallationGuideConnector = (props: IProps) => {
                             }))}
                             leftSection={
                                 <span
-                                    className={classes.configIcon}
                                     dangerouslySetInnerHTML={{
                                         __html: availablePlatforms.find(
                                             (opt) => opt.value === selectedPlatform
