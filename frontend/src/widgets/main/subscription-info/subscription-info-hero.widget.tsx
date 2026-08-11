@@ -1,7 +1,18 @@
-import { ActionIcon, Badge, Box, Button, Card, Group, Progress, Stack, Text } from '@mantine/core'
+import {
+    ActionIcon,
+    Badge,
+    Button,
+    Card,
+    Group,
+    Image,
+    Progress,
+    Stack,
+    Text
+} from '@mantine/core'
 import { IconCopy, IconQrcode } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useClipboard } from '@mantine/hooks'
+import { useEffect, useState } from 'react'
 import { modals } from '@mantine/modals'
 import { renderSVG } from 'uqr'
 
@@ -23,6 +34,10 @@ import classes from './subscription-info-hero.module.css'
  */
 const BILLING_PERIODS_DAYS = [31, 93, 186, 366, 732]
 
+const MINUTE_MS = 60_000
+const HOUR_MS = 60 * MINUTE_MS
+const DAY_MS = 24 * HOUR_MS
+
 interface IProps {
     isMobile: boolean
 }
@@ -34,25 +49,51 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
     const clipboard = useClipboard({ timeout: 10000 })
 
     const { user } = subscription
-    const isActive = user.userStatus === 'ACTIVE' && user.daysLeft > 0
     const isUnlimited = !user.expiresAt
+
+    /*
+     * Отсчёт живой: страницу держат открытой подолгу, и без пересчёта остаток
+     * замирал бы на значении момента загрузки — в последние часы это заметно.
+     */
+    const [now, setNow] = useState(() => Date.now())
+
+    useEffect(() => {
+        if (isUnlimited) return undefined
+
+        const timer = setInterval(() => setNow(Date.now()), MINUTE_MS)
+        return () => clearInterval(timer)
+    }, [isUnlimited])
+
+    /*
+     * Остаток считается по дате, а не по daysLeft: в последние сутки панель
+     * отдаёт daysLeft = 0, и подписка выглядела бы истёкшей, хотя работает.
+     */
+    const msLeft = user.expiresAt
+        ? new Date(user.expiresAt).getTime() - now
+        : Number.POSITIVE_INFINITY
+
+    const isActive = user.isActive && msLeft > 0
 
     const subscriptionUrl = constructSubscriptionUrl(
         window.location.href,
         subscription.user.shortUuid
     )
 
-    // Склонение числительного берёт Intl: «359 дней», «1 день», «2 дня».
-    const daysLabel = new Intl.NumberFormat(currentLang, {
-        style: 'unit',
-        unit: 'day',
-        unitDisplay: 'long'
-    }).format(Math.max(user.daysLeft, 0))
+    // Склонение числительного берёт Intl: «359 дней», «1 день», «16 часов».
+    const formatUnit = (value: number, unit: 'day' | 'hour' | 'minute') =>
+        new Intl.NumberFormat(currentLang, {
+            style: 'unit',
+            unit,
+            unitDisplay: 'long'
+        }).format(value)
 
     const headline = (() => {
         if (isUnlimited) return t(baseTranslations.indefinitely)
         if (!isActive) return t(baseTranslations.expired)
-        return daysLabel
+        // Последние сутки отсчитываются часами, последний час — минутами.
+        if (msLeft < HOUR_MS) return formatUnit(Math.max(1, Math.floor(msLeft / MINUTE_MS)), 'minute')
+        if (msLeft < DAY_MS) return formatUnit(Math.floor(msLeft / HOUR_MS), 'hour')
+        return formatUnit(Math.max(user.daysLeft, 1), 'day')
     })()
 
     const billingPeriod =
@@ -60,12 +101,12 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
 
     const progress = isUnlimited
         ? 100
-        : Math.min(100, Math.max(0, (user.daysLeft / billingPeriod) * 100))
+        : Math.min(100, Math.max(0, (msLeft / (billingPeriod * DAY_MS)) * 100))
 
     const progressColor = (() => {
         if (!isActive) return 'red'
-        if (user.daysLeft <= 3) return 'red'
-        if (user.daysLeft <= 7) return 'orange'
+        if (msLeft <= 3 * DAY_MS) return 'red'
+        if (msLeft <= 7 * DAY_MS) return 'orange'
         return 'teal'
     })()
 
@@ -91,16 +132,21 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
     const handleShowQr = () => {
         vibrate('tap')
 
+        const qrCode = renderSVG(subscriptionUrl, QR_CODE_COLORS)
+
         modals.open({
             centered: true,
             title: t(baseTranslations.getLink),
+            classNames: {
+                content: classes.modalContent,
+                header: classes.modalHeader,
+                title: classes.modalTitle
+            },
             children: (
                 <Stack align="center">
-                    <Box
-                        className={classes.qr}
-                        dangerouslySetInnerHTML={{
-                            __html: renderSVG(subscriptionUrl, QR_CODE_COLORS)
-                        }}
+                    <Image
+                        src={`data:image/svg+xml;utf8,${encodeURIComponent(qrCode)}`}
+                        style={{ borderRadius: 'var(--mantine-radius-md)' }}
                     />
                     <Text c="var(--mantine-color-text)" fw={600} size="lg" ta="center">
                         {t(baseTranslations.scanQrCode)}

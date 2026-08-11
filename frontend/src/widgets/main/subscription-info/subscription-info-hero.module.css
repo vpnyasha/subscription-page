@@ -10,6 +10,41 @@
     border-color: var(--mantine-color-kimiko-4);
 }
 
+/*
+ * На узком экране большая фигура на фоне не читается, поэтому она выглядывает
+ * из правого верхнего угла карточки подписки. Правило висит на самой карточке,
+ * а не на порядковом номере: при скрытом блоке подписки фигура иначе уезжала бы
+ * на «Установку». Сторона выбирается при загрузке (root.layout.tsx), поэтому
+ * фигуры сменяют друг друга от захода к заходу.
+ */
+@media (max-width: 1100px) {
+    .card.card::after {
+        background-image:
+            url('/assets/decor/right.webp'), url('/assets/decor/flower.svg'),
+            url('/assets/decor/dots.svg'), url('/assets/decor/cross.svg'),
+            url('/assets/decor/spark.svg');
+        background-position:
+            right 28px top -12px,
+            right 14px bottom 12px,
+            right 18px top 14px,
+            left 16px bottom 16px,
+            left 22px top 14px;
+        background-size:
+            auto 132px,
+            20px 20px,
+            16px 16px,
+            9px 9px,
+            11px 11px;
+    }
+
+    :global(body[data-kimiko-decor='left']) .card.card::after {
+        background-image:
+            url('/assets/decor/left-flip.webp'), url('/assets/decor/flower.svg'),
+            url('/assets/decor/dots.svg'), url('/assets/decor/cross.svg'),
+            url('/assets/decor/spark.svg');
+    }
+}
+
 .username {
     color: var(--mantine-color-text);
     overflow: hidden;
@@ -54,14 +89,19 @@
     width: 36px;
 }
 
-.qr {
-    border-radius: var(--mantine-radius-md);
-    overflow: hidden;
-    line-height: 0;
+/* Те же стили диалога, что у модалки с ключами: иначе два разных вида окна. */
+.modalContent {
+    background: var(--kimiko-surface-solid);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--kimiko-border);
 }
 
-.qr svg {
-    display: block;
-    width: 100%;
-    height: auto;
+.modalHeader {
+    background: transparent;
+}
+
+.modalTitle {
+    font-weight: 600;
+    color: var(--mantine-color-text);
 }

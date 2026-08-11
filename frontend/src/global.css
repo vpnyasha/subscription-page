@@ -42,15 +42,67 @@
 html,
 body {
     min-height: 100svh;
-    background: var(--mantine-color-body);
     position: relative;
+
+    /*
+     * Цвет держит только html: он красит холст страницы, в том числе полосу под
+     * статус-баром. У body заливки нет намеренно — Safari 26 берёт из неё цвет
+     * баров, и любой непрозрачный цвет сделал бы их сплошными.
+     */
+    background: transparent;
 
     /* Декор уходит за край экрана — не даём ему растянуть страницу вбок. */
     overflow-x: clip;
+
+    /* Оттягивание страницы обнажало бы пустоту под прозрачным фоном. */
+    overscroll-behavior-y: none;
+}
+
+html {
+    background: var(--mantine-color-body);
 }
 
 #root {
     min-height: 100svh;
+    background: var(--mantine-color-body);
+}
+
+/*
+ * СЕНСОРНЫЕ УСТРОЙСТВА. Safari 26 красит верхний и нижний бары по
+ * background-color ближайшего к краю экрана fixed- или sticky-элемента, и любой
+ * такой элемент делает бары сплошными вместо стеклянных. Поэтому здесь собрано
+ * всё, что убирает фиксированные слои с краёв, — правила связаны между собой и
+ * поодиночке ломают либо фон, либо бары.
+ *
+ * Условие не только по ширине: планшет в ландшафте шире 1100px, но бары там
+ * тинтятся точно так же.
+ */
+@media (max-width: 1100px), (hover: none) and (pointer: coarse) {
+    /* Фоновую картинку рисует обычный элемент — его цвет браузер не сэмплит.
+       Плата: фон едет вместе со страницей, а не стоит на месте. */
+    #root {
+        background: var(--mantine-color-body) url('/assets/decor/background.webp') no-repeat
+            center top / cover;
+    }
+
+    .animated-background {
+        display: none;
+    }
+
+    /* Фоновые фигуры по краям — тоже fixed. Их роль берут маленькие фигуры
+       в углу карточки подписки (см. subscription-info-hero.module.css). */
+    body::before,
+    body::after {
+        display: none;
+    }
+
+    /* Именно relative, а не static: фон шапки рисует абсолютный псевдоэлемент,
+       и без позиционированного родителя он расползается по всему контейнеру.
+       top обнуляем — для relative это уже не порог прилипания, а сдвиг вниз. */
+    .header-wrapper {
+        position: relative;
+        top: 0;
+    }
 }
 
 /* Декор рисуется под контентом и не перехватывает клики. */
@@ -110,20 +162,9 @@ body::after {
         --kimiko-surface: rgba(242, 238, 231, 0.62);
         --kimiko-surface-raised: rgba(247, 244, 239, 0.45);
 
-        --kimiko-content-top: var(--mantine-spacing-lg);
-        --kimiko-stack-gap: var(--mantine-spacing-lg);
-    }
-
-    /*
-     * Фигура становится частью страницы и уезжает вместе с контентом.
-     * Фиксированная она дёргалась: мобильные браузеры двигают нижнюю границу
-     * вьюпорта вслед за панелью адреса.
-     */
-    /* Фоновые фигуры уступают место маленьким в углах карточек
-       (см. card.module.css). */
-    body::before,
-    body::after {
-        display: none;
+        /* Один шаг отступа на весь телефон: столько же сверху и по бокам. */
+        --kimiko-content-top: var(--mantine-spacing-md);
+        --kimiko-stack-gap: var(--mantine-spacing-md);
     }
 }
 
@@ -138,13 +179,25 @@ body::after {
     top: 0;
     left: 0;
     right: 0;
-    height: 100lvh;
+    /* С запасом: слой должен доставать под стеклянные бары Safari, иначе под
+       ними видно пустоту вместо фона. */
+    height: calc(100lvh + 15vh);
     pointer-events: none;
     z-index: 0;
-    background: url('/assets/decor/background.webp') no-repeat center center / cover;
+    /*
+     * Цвет под картинкой задан намеренно: Safari 26 красит верхний и нижний
+     * бары по background-color ближайшего fixed-элемента у края экрана, а это
+     * и есть наш слой. Без цвета бары получались белыми. Значение подобрано по
+     * среднему цвету картинки, поэтому бары сливаются с фоном.
+     */
+    background: #e5dacf url('/assets/decor/background.webp') no-repeat center center / cover;
 
-    /* Свой композитный слой — браузер не перерисовывает фон при скролле. */
-    transform: translateZ(0);
+    /*
+     * Safari 26 обрезает непрозрачные fixed-слои по верхнему краю плавающей
+     * панели браузера — под ней открывалась полоса заливки. Слой с прозрачностью
+     * композитится отдельно и обрезки избегает, отсюда 0.99 вместо единицы.
+     */
+    opacity: 0.99;
 }
 
 /* Шапка живёт внутри того же контейнера, что и карточки, поэтому её края
@@ -153,11 +206,29 @@ body::after {
     position: sticky;
     top: calc(env(safe-area-inset-top) + var(--mantine-spacing-md));
     z-index: 100;
+    border-radius: var(--mantine-radius-lg);
+    padding-block: var(--mantine-spacing-md);
+
+    /*
+     * Safari 26 красит статус-бар в фон ближайшего sticky/fixed элемента у края
+     * экрана, поэтому сам элемент прозрачен, а подложку со стеклом рисует
+     * псевдоэлемент. Тогда полоса берёт цвет заливки страницы, подобранный под
+     * фоновую картинку, и не выделяется на её фоне.
+     */
+    background: transparent;
+    isolation: isolate;
+}
+
+.header-wrapper::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     background: var(--kimiko-surface);
     border: 1px solid var(--kimiko-border);
-    border-radius: var(--mantine-radius-lg);
     box-shadow: 0 1px 3px var(--kimiko-shadow);
 }
 

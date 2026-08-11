@@ -3,16 +3,22 @@ import {
     SubscriptionPageRawConfigSchema
 } from '@remnawave/subscription-page-types'
 import { GetSubscriptionInfoByShortUuidCommand } from '@remnawave/backend-contract'
-import { Outlet } from 'react-router'
 import { useLayoutEffect } from 'react'
+import { Outlet } from 'react-router'
 import consola from 'consola/browser'
 import { ofetch } from 'ofetch'
 
 import {
+    useAppConfigNullable,
+    useAppConfigStoreActions,
+    useCurrentLang,
+    useIsConfigLoaded
+} from '@entities/app-config-store'
+import {
     useSubscriptionInfoStoreActions,
     useSubscriptionInfoStoreInfo
 } from '@entities/subscription-info-store'
-import { useAppConfigStoreActions, useIsConfigLoaded } from '@entities/app-config-store'
+import { SubscriptionMissingShared } from '@shared/ui/subscription-missing/subscription-missing.shared'
 import { LoadingScreen } from '@shared/ui'
 
 import classes from './root.module.css'
@@ -23,6 +29,8 @@ export function RootLayout() {
 
     const { subscription } = useSubscriptionInfoStoreInfo()
     const isConfigLoaded = useIsConfigLoaded()
+    const config = useAppConfigNullable()
+    const currentLang = useCurrentLang()
 
     useLayoutEffect(() => {
         // На узком экране помещается только одна декоративная фигура —
@@ -77,13 +85,30 @@ export function RootLayout() {
         fetchConfig()
     }, [])
 
-    if (!isConfigLoaded || !subscription) {
+    if (!isConfigLoaded) {
         return (
             <div className={classes.root}>
                 <div className="animated-background"></div>
                 <div className={classes.content}>
                     <main className={classes.main}>
                         <LoadingScreen height="100vh" />
+                    </main>
+                </div>
+            </div>
+        )
+    }
+
+    // Конфиг пришёл, а данных подписки нет — значит открыт домен без ключа.
+    if (!subscription) {
+        return (
+            <div className={classes.root}>
+                <div className="animated-background"></div>
+                <div className={classes.content}>
+                    <main className={classes.main}>
+                        <SubscriptionMissingShared
+                            lang={currentLang}
+                            supportUrl={config?.brandingSettings.supportUrl ?? ''}
+                        />
                     </main>
                 </div>
             </div>

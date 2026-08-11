@@ -86,41 +86,6 @@
     }
 }
 
-/*
- * На узком экране большая фигура на фоне не читается, поэтому каждая карточка
- * получает свою — она выглядывает из правого верхнего угла. Карточки чередуют
- * фигуры; левая берётся отзеркаленной, чтобы смотреть внутрь карточки.
- */
-@media (max-width: 1100px) {
-    .root:nth-of-type(1)::after {
-        background-image:
-            url('/assets/decor/right.webp'), url('/assets/decor/flower.svg'),
-            url('/assets/decor/dots.svg'), url('/assets/decor/cross.svg'),
-            url('/assets/decor/spark.svg');
-        background-position:
-            right 28px top -12px,
-            right 14px bottom 12px,
-            right 18px top 14px,
-            left 16px bottom 16px,
-            left 22px top 14px;
-        background-size:
-            auto 132px,
-            20px 20px,
-            16px 16px,
-            9px 9px,
-            11px 11px;
-    }
-
-    /* Сторона выбирается при загрузке (root.layout.tsx) — фигуры сменяют
-       друг друга от захода к заходу. */
-    :global(body[data-kimiko-decor='left']) .root:nth-of-type(1)::after {
-        background-image:
-            url('/assets/decor/left-flip.webp'), url('/assets/decor/flower.svg'),
-            url('/assets/decor/dots.svg'), url('/assets/decor/cross.svg'),
-            url('/assets/decor/spark.svg');
-    }
-}
-
 /* Размытие съедало фигуру, которая на узком экране видна только сквозь карточки. */
 @media (max-width: 1100px) {
     .root {

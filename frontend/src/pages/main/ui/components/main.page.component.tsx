@@ -64,11 +64,9 @@ export const MainPageComponent = ({ isMobile, platform }: IMainPageComponentProp
     return (
         <Page>
             <Container maw={1200} pt="md" px={{ base: 'md', sm: 'lg', md: 'xl' }}>
-                <Box
-                    className="header-wrapper"
-                    px={{ base: 'sm', xs: 'md', sm: 'lg', md: 'xl' }}
-                    py="md"
-                >
+                {/* Вертикальные отступы заданы в CSS: на телефоне шапка
+                    прибавляет к верхнему высоту статус-бара. */}
+                <Box className="header-wrapper" px={{ base: 'sm', xs: 'md', sm: 'lg', md: 'xl' }}>
                     <Group justify="space-between">
                         <Group gap="sm" style={{ userSelect: 'none' }} wrap="nowrap">
                             <Image
@@ -86,10 +84,13 @@ export const MainPageComponent = ({ isMobile, platform }: IMainPageComponentProp
                             </Title>
                         </Group>
 
-                        {/* Ссылка и QR переехали в блок подписки, в шапке
-                            остаётся только связь с поддержкой. */}
+                        {/* Ссылка и QR живут в блоке подписки, поэтому в шапке
+                            кнопка нужна лишь когда блок скрыт настройкой панели. */}
                         <SubscriptionLinkWidget
-                            hideGetLink
+                            hideGetLink={
+                                config.baseSettings.hideGetLinkButton ||
+                                SubscriptionInfoBlockRenderer !== null
+                            }
                             supportUrl={config.brandingSettings.supportUrl}
                         />
                     </Group>
