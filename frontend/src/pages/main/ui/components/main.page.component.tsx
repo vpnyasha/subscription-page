@@ -13,7 +13,8 @@ import {
 } from '@widgets/main'
 import { useAppConfig, useAppConfigStoreActions, useCurrentLang } from '@entities/app-config-store'
 import { LanguagePicker } from '@shared/ui/language-picker/language-picker.shared'
-import { BRAND_LOGO_URL } from '@shared/constants'
+import { BRAND_LOGO_URL, INSTALL_ANCHOR_ID } from '@shared/constants'
+import { MockSwitcher } from '@shared/dev/mock-switcher'
 import { Page } from '@shared/ui'
 
 interface IMainPageComponentProps {
@@ -110,19 +111,28 @@ export const MainPageComponent = ({ isMobile, platform }: IMainPageComponentProp
                 }}
             >
                 <Stack gap="var(--kimiko-stack-gap)">
+                    {/* Стенд состояний блока подписки: в прод-сборке
+                        import.meta.env.DEV становится false, ветка и импорт
+                        вырезаются целиком. */}
+                    {import.meta.env.DEV && <MockSwitcher />}
+
                     {SubscriptionInfoBlockRenderer && (
                         <SubscriptionInfoBlockRenderer isMobile={isMobile} />
                     )}
 
                     {atLeastOnePlatformApp && (
-                        <InstallationGuideConnector
-                            BlockRenderer={
-                                BLOCK_RENDERERS[config.uiConfig.installationGuidesBlockType]
-                            }
-                            hasPlatformApps={hasPlatformApps}
-                            isMobile={isMobile}
-                            platform={platform}
-                        />
+                        /* Якорь для кнопки «Подключиться» у ни разу не
+                           подключавшегося пользователя. */
+                        <div id={INSTALL_ANCHOR_ID}>
+                            <InstallationGuideConnector
+                                BlockRenderer={
+                                    BLOCK_RENDERERS[config.uiConfig.installationGuidesBlockType]
+                                }
+                                hasPlatformApps={hasPlatformApps}
+                                isMobile={isMobile}
+                                platform={platform}
+                            />
+                        </div>
                     )}
 
                     <RawKeysWidget isMobile={isMobile} />

@@ -9,33 +9,35 @@ import {
     Stack,
     Text
 } from '@mantine/core'
-import { IconCopy, IconQrcode } from '@tabler/icons-react'
+import { IconCopy, IconPlugConnected, IconQrcode } from '@tabler/icons-react'
 import { useEffect, useState } from 'react'
 import { renderSVG } from 'uqr'
+import clsx from 'clsx'
 
-import { ACCOUNT_LABEL, QR_CODE_COLORS, showCopyNotification } from '@shared/constants'
+import {
+    ACCOUNT_LABEL,
+    INSTALL_ANCHOR_ID,
+    QR_CODE_COLORS,
+    showCopyNotification
+} from '@shared/constants'
 import { constructSubscriptionUrl } from '@shared/utils/construct-subscription-url'
 import { formatDate, isIndefiniteExpiration } from '@shared/utils/config-parser'
 import { useSubscription } from '@entities/subscription-info-store'
+import { scrollToElement, useTranslation } from '@shared/hooks'
 import { useAppConfig } from '@entities/app-config-store'
 import { openDimmedModal } from '@shared/utils/dim-modal'
+import { TelegramLogo } from '@shared/ui/telegram-logo'
 import { copyText } from '@shared/utils/copy-text'
 import { vibrate } from '@shared/utils/vibrate'
-import { useTranslation } from '@shared/hooks'
 
+import {
+    DAY_MS,
+    getSubscriptionState,
+    HOUR_MS,
+    MINUTE_MS
+} from './subscription-info-hero.state'
+import { formatNearMoment, getHeroTexts } from './subscription-info-hero.texts'
 import classes from './subscription-info-hero.module.css'
-
-/**
- * Панель не отдаёт дату начала подписки, поэтому период оплаты угадывается:
- * берётся ближайший сверху типовой срок — месяц, квартал, полгода, год, два.
- * Так шкала месячной подписки за пять дней до конца пустеет, а годовая в свои
- * первые дни стоит почти полной.
- */
-const BILLING_PERIODS_DAYS = [31, 93, 186, 366, 732]
-
-const MINUTE_MS = 60_000
-const HOUR_MS = 60 * MINUTE_MS
-const DAY_MS = 24 * HOUR_MS
 
 interface IProps {
     isMobile: boolean
@@ -48,12 +50,7 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
 
     const { user } = subscription
 
-    /*
-     * Пустой даты панель не отдаёт: бессрочная подписка приходит датой в 2099
-     * году, поэтому одной проверки на отсутствие expiresAt мало — без второй
-     * в заголовке вместо «Бессрочно» стояло бы «26 000 дней».
-     */
-    const isUnlimited = !user.expiresAt || isIndefiniteExpiration(user.expiresAt)
+    const texts = getHeroTexts(currentLang)
 
     /*
      * Отсчёт живой: страницу держат открытой подолгу, и без пересчёта остаток
@@ -61,29 +58,24 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
      */
     const [now, setNow] = useState(() => Date.now())
 
+    const state = getSubscriptionState(user, now)
+
     useEffect(() => {
-        if (isUnlimited) return undefined
+        if (state.isUnlimited) return undefined
 
         const timer = setInterval(() => setNow(Date.now()), MINUTE_MS)
         return () => clearInterval(timer)
-    }, [isUnlimited])
-
-    /*
-     * Остаток считается по дате, а не по daysLeft: в последние сутки панель
-     * отдаёт daysLeft = 0, и подписка выглядела бы истёкшей, хотя работает.
-     */
-    const msLeft = user.expiresAt
-        ? new Date(user.expiresAt).getTime() - now
-        : Number.POSITIVE_INFINITY
-
-    const isActive = user.isActive && msLeft > 0
+    }, [state.isUnlimited])
 
     const subscriptionUrl = constructSubscriptionUrl(
         window.location.href,
         subscription.user.shortUuid
     )
 
-    // Склонение числительного берёт Intl: «359 дней», «1 день», «16 часов».
+    /*
+     * Склонение числительного берёт Intl: он знает правила CLDR и покрывает все
+     * ветки русского — «1 час», «2 часа», «5 часов», «21 час», «22 часа».
+     */
     const formatUnit = (value: number, unit: 'day' | 'hour' | 'minute') =>
         new Intl.NumberFormat(currentLang, {
             style: 'unit',
@@ -92,36 +84,70 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
         }).format(value)
 
     const headline = (() => {
-        if (isUnlimited) return t(baseTranslations.indefinitely)
-        if (!isActive) return t(baseTranslations.expired)
-        // Последние сутки отсчитываются часами, последний час — минутами.
-        if (msLeft < HOUR_MS) return formatUnit(Math.max(1, Math.floor(msLeft / MINUTE_MS)), 'minute')
-        if (msLeft < DAY_MS) return formatUnit(Math.floor(msLeft / HOUR_MS), 'hour')
+        /*
+         * Выключенная вручную подписка со сроком в запасе — не «Истекла»:
+         * панель отдаёт isActive = false, а дата ещё впереди.
+         */
+        if (state.kind === 'expired') {
+            return state.isRanOut
+                ? t(baseTranslations.expired)
+                : t(baseTranslations.inactive)
+        }
+        if (state.isUnlimited) return t(baseTranslations.indefinitely)
+        /*
+         * Последние сутки отсчитываются часами, последний час — минутами.
+         * Округление вниз, но не ниже единицы: «0 часов» не бывает — на этом
+         * рубеже строка уже показывает минуты, а на нуле подписка истекла.
+         */
+        if (state.msLeft < HOUR_MS) {
+            return formatUnit(Math.max(1, Math.floor(state.msLeft / MINUTE_MS)), 'minute')
+        }
+        if (state.msLeft < DAY_MS) return formatUnit(Math.floor(state.msLeft / HOUR_MS), 'hour')
         return formatUnit(Math.max(user.daysLeft, 1), 'day')
     })()
 
-    const billingPeriod =
-        BILLING_PERIODS_DAYS.find((period) => user.daysLeft <= period) ?? user.daysLeft
+    /*
+     * Дата подменяется временем, когда до срока меньше суток: «11 августа 2026»
+     * в день окончания — это сегодняшнее число, строка не сообщает ничего.
+     */
+    const expiresValue = (() => {
+        if (state.isUnlimited || isIndefiniteExpiration(user.expiresAt)) {
+            return t(baseTranslations.indefinitely)
+        }
 
-    const progress = isUnlimited
-        ? 100
-        : Math.min(100, Math.max(0, (msLeft / (billingPeriod * DAY_MS)) * 100))
-
-    const progressColor = (() => {
-        if (!isActive) return 'red'
-        if (msLeft <= 3 * DAY_MS) return 'red'
-        if (msLeft <= 7 * DAY_MS) return 'orange'
-        return 'teal'
+        return (
+            formatNearMoment(user.expiresAt, currentLang, texts) ??
+            formatDate(user.expiresAt, currentLang, baseTranslations)
+        )
     })()
-
-    const expiresValue = isUnlimited
-        ? t(baseTranslations.indefinitely)
-        : formatDate(user.expiresAt, currentLang, baseTranslations)
 
     const trafficValue =
         user.trafficLimit === '0'
             ? `${user.trafficUsed} / ∞`
             : `${user.trafficUsed} / ${user.trafficLimit}`
+
+    const badge = (() => {
+        if (state.kind === 'onboarding') {
+            return { label: texts.neverConnectedStatus, tone: 'muted' }
+        }
+        if (state.kind === 'expired') {
+            return {
+                label: state.isRanOut
+                    ? t(baseTranslations.expired)
+                    : t(baseTranslations.inactive),
+                tone: 'expired'
+            }
+        }
+        /*
+         * На тревожных порогах бейдж уходит в янтарь и меняет слово: зелёная
+         * «Активна» рядом с красной шкалой успокаивала ровно тогда, когда нужно
+         * встревожить.
+         */
+        if (state.tone === 'critical' || state.tone === 'warning') {
+            return { label: texts.expiring, tone: 'warning' }
+        }
+        return { label: t(baseTranslations.active), tone: 'ok' }
+    })()
 
     const handleCopy = async () => {
         vibrate('drop')
@@ -132,6 +158,13 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
             t(baseTranslations.linkCopied),
             t(baseTranslations.linkCopiedToClipboard)
         )
+    }
+
+    const handleConnect = () => {
+        vibrate('tap')
+
+        const target = document.getElementById(INSTALL_ANCHOR_ID)
+        if (target) scrollToElement(target)
     }
 
     const handleShowQr = () => {
@@ -164,15 +197,25 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
         })
     }
 
+    /*
+     * У новичка строка «Трафик 0 / ∞» — не факт, а тот самый признак, по
+     * которому блок и переключился: показывать её значит занимать место пустым
+     * значением.
+     */
     const rows: Array<{ label: string; value: string }> = [
         { label: ACCOUNT_LABEL, value: user.username },
-        { label: t(baseTranslations.bandwidth), value: trafficValue },
+        ...(state.kind === 'onboarding'
+            ? []
+            : [{ label: t(baseTranslations.bandwidth), value: trafficValue }]),
         { label: t(baseTranslations.expires), value: expiresValue }
     ]
+
+    const { supportUrl } = config.brandingSettings
 
     return (
         <Card
             className={classes.card}
+            data-tone={state.tone}
             p={{ base: 'sm', xs: 'md', sm: 'lg', md: 'xl' }}
             radius="lg"
         >
@@ -181,22 +224,51 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
                     <Text className={classes.username} fw={700} size={isMobile ? 'lg' : 'xl'}>
                         {user.username}
                     </Text>
-                    <Badge color={isActive ? 'teal' : 'red'} radius="sm" tt="none" variant="light">
-                        {isActive ? t(baseTranslations.active) : t(baseTranslations.inactive)}
+                    <Badge
+                        className={classes.badge}
+                        data-badge-tone={badge.tone}
+                        radius="sm"
+                        tt="none"
+                        variant="light"
+                    >
+                        {badge.label}
                     </Badge>
                 </Group>
 
-                <Stack gap={6}>
-                    <Text className={classes.headline}>{headline}</Text>
+                {state.kind === 'onboarding' ? (
+                    <Stack gap={6}>
+                        <Text className={clsx(classes.headline, classes.headlineCompact)}>
+                            {texts.neverConnectedTitle}
+                        </Text>
+                        <Text c="dimmed" size="sm">
+                            {texts.neverConnectedHint}
+                        </Text>
+                    </Stack>
+                ) : (
+                    <Stack gap={6}>
+                        <Text className={classes.headline}>{headline}</Text>
 
-                    <Progress
-                        classNames={{ root: classes.progressRoot }}
-                        color={progressColor}
-                        radius="xl"
-                        size="sm"
-                        value={progress}
-                    />
-                </Stack>
+                        {/*
+                            Заполнение не тоньше 10px: при остатке в доли процента
+                            полоса вырождалась в точку у левого края, которую легко
+                            принять за артефакт рендера. Дорожка тонируется в цвет
+                            состояния — тогда полоса читается целиком, а не одним
+                            заполнением.
+                        */}
+                        <Progress
+                            classNames={{
+                                root: classes.progressRoot,
+                                section: clsx(
+                                    classes.progressSection,
+                                    state.progress > 0 && classes.progressSectionFilled
+                                )
+                            }}
+                            radius="xl"
+                            size="sm"
+                            value={state.progress}
+                        />
+                    </Stack>
+                )}
 
                 <Stack gap={0}>
                     {rows.map((row) => (
@@ -217,7 +289,42 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
                     ))}
                 </Stack>
 
-                {!config.baseSettings.hideGetLinkButton && (
+                {/*
+                    У истёкшей подписки ссылка мертва: копировать и сканировать
+                    нечего, единственное осмысленное действие — продлить.
+                */}
+                {state.kind === 'expired' && supportUrl !== '' && (
+                    <Button
+                        color="kimiko"
+                        component="a"
+                        fullWidth
+                        href={supportUrl}
+                        leftSection={<TelegramLogo size={18} />}
+                        onClick={() => vibrate('tap')}
+                        radius="md"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        variant="filled"
+                    >
+                        {state.isRanOut ? texts.renew : texts.support}
+                    </Button>
+                )}
+
+                {state.kind === 'onboarding' && (
+                    <Button
+                        color="kimiko"
+                        fullWidth
+                        leftSection={<IconPlugConnected size={18} />}
+                        onClick={handleConnect}
+                        radius="md"
+                        size="md"
+                        variant="filled"
+                    >
+                        {texts.connect}
+                    </Button>
+                )}
+
+                {state.kind !== 'expired' && !config.baseSettings.hideGetLinkButton && (
                     <Group gap="xs" wrap="nowrap">
                         <Button
                             color="kimiko"

@@ -1,6 +1,6 @@
 import { CSSVariablesResolver, v8CssVariablesResolver } from '@mantine/core'
 
-import { kimikoColors } from './palette'
+import { kimikoColors, kimikoStateColors } from './palette'
 
 /**
  * Поверх стандартного резолвера Mantine доопределяет семантику Kimiko:
@@ -28,7 +28,10 @@ export const kimikoCssVariablesResolver: CSSVariablesResolver = (theme) => {
             '--kimiko-surface-raised': kimikoColors.surfaceRaised,
             '--kimiko-surface-raised-solid': kimikoColors.surfaceRaisedSolid,
             '--kimiko-surface-solid': kimikoColors.surfaceSolid,
-            '--kimiko-track': kimikoColors.track
+            '--kimiko-track': kimikoColors.track,
+            '--kimiko-state-ok': kimikoStateColors.ok,
+            '--kimiko-state-warning': kimikoStateColors.warning,
+            '--kimiko-state-critical': kimikoStateColors.critical
         },
         light: {
             ...base.light,

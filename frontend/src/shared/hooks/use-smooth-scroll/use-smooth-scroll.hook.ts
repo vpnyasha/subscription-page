@@ -11,6 +11,24 @@ import Lenis from 'lenis'
  * На сенсорных устройствах не включается намеренно: там прокруткой управляет
  * браузер, и вместе с ней ездят его бары — перехват ломает и то, и другое.
  */
+/*
+ * Ссылка на текущий экземпляр нужна для программной прокрутки: пока Lenis водит
+ * страницу сам, нативный scrollIntoView он перебивает своим rAF — элемент
+ * дёргается и остаётся на месте. На телефоне Lenis выключен, ссылка пустая,
+ * и прокрутка идёт обычным путём.
+ */
+let activeLenis: Lenis | null = null
+
+/** Плавно прокручивает к элементу — через Lenis, если он ведёт страницу. */
+export function scrollToElement(element: HTMLElement) {
+    if (activeLenis) {
+        activeLenis.scrollTo(element, { offset: -16 })
+        return
+    }
+
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 export function useSmoothScroll() {
     useEffect(() => {
         const pointer = window.matchMedia('(hover: hover) and (pointer: fine)')
@@ -29,6 +47,8 @@ export function useSmoothScroll() {
             wheelMultiplier: 1.1
         })
 
+        activeLenis = lenis
+
         let frame = 0
 
         const raf = (time: number) => {
@@ -41,6 +61,7 @@ export function useSmoothScroll() {
         return () => {
             cancelAnimationFrame(frame)
             lenis.destroy()
+            activeLenis = null
         }
     }, [])
 }

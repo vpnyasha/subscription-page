@@ -1,9 +1,26 @@
 /*
  * Главная карточка страницы: акцентная рамка горит постоянно, а не только под
  * курсором, — она выделяет блок подписки среди остальных карточек.
+ *
+ * Цвет состояния объявлен один раз на карточке и растекается по заголовку,
+ * шкале и бейджу: производные (--state-soft, --state-track) считаются лениво,
+ * поэтому переопределения ниже по data-tone подхватываются ими сами.
  */
 .card.card {
+    --state: var(--kimiko-state-ok);
+    --state-soft: color-mix(in srgb, var(--state) 14%, transparent);
+    --state-track: color-mix(in srgb, var(--state) 20%, var(--kimiko-track));
+
     border: 2px solid var(--mantine-color-kimiko-3);
+}
+
+.card.card[data-tone='warning'] {
+    --state: var(--kimiko-state-warning);
+}
+
+.card.card[data-tone='critical'],
+.card.card[data-tone='expired'] {
+    --state: var(--kimiko-state-critical);
 }
 
 /* Только для мыши: на тач-экране :hover залипает после тапа. */
@@ -65,9 +82,55 @@
     letter-spacing: -0.02em;
 }
 
+/*
+ * На тревожных порогах краснеет и заголовок: раньше полоса была красной, а
+ * «3 часа» рядом с ней оставались чёрными — глаз читал число как обычный факт.
+ */
+.card[data-tone='critical'] .headline,
+.card[data-tone='expired'] .headline {
+    color: var(--state);
+}
+
+/* Не число, а фраза — с крупным кеглем она ломается на три строки. */
+.headlineCompact {
+    font-size: clamp(1.35rem, 4.6vw, 1.7rem);
+    letter-spacing: -0.01em;
+}
+
+.badge.badge {
+    background: var(--state-soft);
+    border: none;
+    color: var(--state);
+}
+
+/* «Не подключено» — не тревога и не успех: состояние без окраски. */
+.badge.badge[data-badge-tone='muted'] {
+    background: var(--kimiko-track);
+    color: var(--mantine-color-dimmed);
+}
+
+.badge.badge[data-badge-tone='warning'] {
+    background: color-mix(in srgb, var(--kimiko-state-warning) 14%, transparent);
+    color: var(--kimiko-state-warning);
+}
+
 /* Без дорожки полоса читается как подчёркивание, а не как индикатор. */
 .progressRoot {
-    background: var(--kimiko-track);
+    background: var(--state-track);
+}
+
+.progressSection.progressSection {
+    background-color: var(--state);
+}
+
+/*
+ * Минимум заполнения. При остатке в доли процента (три часа от месячной
+ * подписки — это 0,4%) полоса вырождалась в точку у левого края: её принимали
+ * за артефакт рендера, а не за индикатор. Класс вешается только при value > 0,
+ * иначе у истёкшей подписки торчал бы огрызок.
+ */
+.progressSectionFilled.progressSectionFilled {
+    min-width: 10px;
 }
 
 .row {

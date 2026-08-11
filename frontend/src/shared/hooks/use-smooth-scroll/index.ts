@@ -1,1 +1,1 @@
-export { useSmoothScroll } from './use-smooth-scroll.hook'
+export { scrollToElement, useSmoothScroll } from './use-smooth-scroll.hook'

@@ -1,3 +1,4 @@
+export * from './anchors'
 export * from './branding'
 export * from './labels'
 export * from './notifications'
