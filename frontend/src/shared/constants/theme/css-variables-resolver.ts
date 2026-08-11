@@ -27,7 +27,8 @@ export const kimikoCssVariablesResolver: CSSVariablesResolver = (theme) => {
             '--kimiko-surface-hover': kimikoColors.surfaceHover,
             '--kimiko-surface-raised': kimikoColors.surfaceRaised,
             '--kimiko-surface-raised-solid': kimikoColors.surfaceRaisedSolid,
-            '--kimiko-surface-solid': kimikoColors.surfaceSolid
+            '--kimiko-surface-solid': kimikoColors.surfaceSolid,
+            '--kimiko-track': kimikoColors.track
         },
         light: {
             ...base.light,

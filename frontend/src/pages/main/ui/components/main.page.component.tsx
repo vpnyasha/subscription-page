@@ -7,9 +7,7 @@ import {
     InstallationGuideConnector,
     MinimalBlockRenderer,
     RawKeysWidget,
-    SubscriptionInfoCardsWidget,
-    SubscriptionInfoCollapsedWidget,
-    SubscriptionInfoExpandedWidget,
+    SubscriptionInfoHeroWidget,
     SubscriptionLinkWidget,
     TimelineBlockRenderer
 } from '@widgets/main'
@@ -30,10 +28,14 @@ const BLOCK_RENDERERS = {
     minimal: MinimalBlockRenderer
 } as const
 
+/*
+ * У форка один вид блока подписки, поэтому любой вариант из конфига панели
+ * рисуется одинаково. Скрыть блок целиком по-прежнему можно.
+ */
 const SUBSCRIPTION_INFO_BLOCK_RENDERERS = {
-    cards: SubscriptionInfoCardsWidget,
-    collapsed: SubscriptionInfoCollapsedWidget,
-    expanded: SubscriptionInfoExpandedWidget,
+    cards: SubscriptionInfoHeroWidget,
+    collapsed: SubscriptionInfoHeroWidget,
+    expanded: SubscriptionInfoHeroWidget,
     hidden: null
 } as const
 
@@ -84,8 +86,10 @@ export const MainPageComponent = ({ isMobile, platform }: IMainPageComponentProp
                             </Title>
                         </Group>
 
+                        {/* Ссылка и QR переехали в блок подписки, в шапке
+                            остаётся только связь с поддержкой. */}
                         <SubscriptionLinkWidget
-                            hideGetLink={config.baseSettings.hideGetLinkButton}
+                            hideGetLink
                             supportUrl={config.brandingSettings.supportUrl}
                         />
                     </Group>

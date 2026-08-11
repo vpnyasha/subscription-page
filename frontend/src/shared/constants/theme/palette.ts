@@ -55,6 +55,8 @@ export const kimikoColors = {
     dimmed: '#6e665d',
     border: 'rgba(43, 39, 36, 0.12)',
     borderStrong: 'rgba(43, 39, 36, 0.2)',
+    /** Незаполненная часть шкал. Плотный, чтобы не сливаться с поверхностью. */
+    track: '#e5dace',
     accent: '#8c2f2a'
 } as const
 

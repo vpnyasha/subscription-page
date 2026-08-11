@@ -1,0 +1,67 @@
+/*
+ * Главная карточка страницы: акцентная рамка горит постоянно, а не только под
+ * курсором, — она выделяет блок подписки среди остальных карточек.
+ */
+.card.card {
+    border: 2px solid var(--mantine-color-kimiko-3);
+}
+
+.card.card:hover {
+    border-color: var(--mantine-color-kimiko-4);
+}
+
+.username {
+    color: var(--mantine-color-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Главное число блока: масштабируется от ширины экрана, но не мельче 30px. */
+.headline {
+    color: var(--mantine-color-text);
+    font-family: var(--mantine-font-family-headings);
+    font-size: clamp(1.9rem, 7vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+/* Без дорожки полоса читается как подчёркивание, а не как индикатор. */
+.progressRoot {
+    background: var(--kimiko-track);
+}
+
+.row {
+    padding: var(--mantine-spacing-xs) 0;
+    border-bottom: 1px solid var(--kimiko-border);
+}
+
+.row:last-of-type {
+    border-bottom: none;
+}
+
+.rowValue {
+    color: var(--mantine-color-text);
+    text-align: right;
+    white-space: nowrap;
+}
+
+.qrButton {
+    background: var(--kimiko-surface-raised);
+    border: 1px solid var(--kimiko-border-strong);
+    height: 36px;
+    width: 36px;
+}
+
+.qr {
+    border-radius: var(--mantine-radius-md);
+    overflow: hidden;
+    line-height: 0;
+}
+
+.qr svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
