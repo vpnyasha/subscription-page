@@ -13,11 +13,14 @@
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <!-- viewport-fit=cover: страница заходит под вырез и статус-бар,
-             отступы возвращаем через env(safe-area-inset-*) -->
+        <!-- viewport-fit=cover намеренно НЕ задан. С ним страница заезжает под
+             статус-бар, и Safari 26 при скролле начинает размывать проезжающий
+             контент — бар белел на ходу. Без него страница начинается под
+             баром, размывать нечего, и бар держит цвет .animated-background.
+             Плата: env(safe-area-inset-*) становятся нулевыми. -->
         <meta
             name="viewport"
-            content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no, viewport-fit=cover"
+            content="minimum-scale=1, initial-scale=1, width=device-width, user-scalable=no"
         />
         <!-- Основная иконка лежит на CDN, локальные файлы остаются запасными -->
         <link

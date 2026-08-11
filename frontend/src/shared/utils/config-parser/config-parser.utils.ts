@@ -5,6 +5,16 @@ import {
 } from '@remnawave/subscription-page-types'
 import dayjs from 'dayjs'
 
+/*
+ * Бессрочную подписку панель отдаёт не пустой датой, а датой в 2099 году —
+ * поля «без срока» в контракте нет. Проверка нужна везде, где дата попадает
+ * на экран, иначе вместо «Бессрочно» считаются десятки тысяч дней.
+ */
+const INDEFINITE_YEAR = 2099
+
+export const isIndefiniteExpiration = (dateStr: Date | null | string | undefined) =>
+    !!dateStr && dayjs(dateStr).year() === INDEFINITE_YEAR
+
 export function getIconFromLibrary(iconKey: string, svgLibrary: Record<string, string>) {
     return svgLibrary[iconKey]
 }
@@ -33,7 +43,7 @@ export function getExpirationTextUtil(
         return `${getLocalizedText(baseTranslations.expired, currentLang)} ${expiration.fromNow(false)}`
     }
 
-    if (expiration.year() === 2099) {
+    if (isIndefiniteExpiration(expireAt)) {
         return getLocalizedText(baseTranslations.indefinitely, currentLang)
     }
 
@@ -45,7 +55,7 @@ export const formatDate = (
     currentLang: TSubscriptionPageLanguageCode,
     baseTranslations: TSubscriptionPageRawConfig['baseTranslations']
 ) => {
-    if (dayjs(dateStr).year() === 2099) {
+    if (isIndefiniteExpiration(dateStr)) {
         return getLocalizedText(baseTranslations.indefinitely, currentLang)
     }
     if (currentLang === 'fa') {

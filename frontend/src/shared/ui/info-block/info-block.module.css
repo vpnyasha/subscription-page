@@ -11,8 +11,12 @@
         border-color 0.18s ease;
 }
 
-.infoBlock:hover {
-    transform: translateY(-2px);
+/* Только для мыши: на тач-экране :hover срабатывает по тапу и остаётся
+   висеть, пока не тронешь что-то другое, — блок выглядит нажатым. */
+@media (hover: hover) {
+    .infoBlock:hover {
+        transform: translateY(-2px);
+    }
 }
 
 .blue {

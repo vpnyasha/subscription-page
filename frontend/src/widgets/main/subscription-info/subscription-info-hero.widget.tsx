@@ -10,17 +10,16 @@ import {
     Text
 } from '@mantine/core'
 import { IconCopy, IconQrcode } from '@tabler/icons-react'
-import { notifications } from '@mantine/notifications'
-import { useClipboard } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
-import { modals } from '@mantine/modals'
 import { renderSVG } from 'uqr'
 
+import { ACCOUNT_LABEL, QR_CODE_COLORS, showCopyNotification } from '@shared/constants'
 import { constructSubscriptionUrl } from '@shared/utils/construct-subscription-url'
+import { formatDate, isIndefiniteExpiration } from '@shared/utils/config-parser'
 import { useSubscription } from '@entities/subscription-info-store'
-import { ACCOUNT_LABEL, QR_CODE_COLORS } from '@shared/constants'
 import { useAppConfig } from '@entities/app-config-store'
-import { formatDate } from '@shared/utils/config-parser'
+import { openDimmedModal } from '@shared/utils/dim-modal'
+import { copyText } from '@shared/utils/copy-text'
 import { vibrate } from '@shared/utils/vibrate'
 import { useTranslation } from '@shared/hooks'
 
@@ -46,10 +45,15 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
     const { t, currentLang, baseTranslations } = useTranslation()
     const config = useAppConfig()
     const subscription = useSubscription()
-    const clipboard = useClipboard({ timeout: 10000 })
 
     const { user } = subscription
-    const isUnlimited = !user.expiresAt
+
+    /*
+     * Пустой даты панель не отдаёт: бессрочная подписка приходит датой в 2099
+     * году, поэтому одной проверки на отсутствие expiresAt мало — без второй
+     * в заголовке вместо «Бессрочно» стояло бы «26 000 дней».
+     */
+    const isUnlimited = !user.expiresAt || isIndefiniteExpiration(user.expiresAt)
 
     /*
      * Отсчёт живой: страницу держат открытой подолгу, и без пересчёта остаток
@@ -119,14 +123,15 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
             ? `${user.trafficUsed} / ∞`
             : `${user.trafficUsed} / ${user.trafficLimit}`
 
-    const handleCopy = () => {
+    const handleCopy = async () => {
         vibrate('drop')
-        clipboard.copy(subscriptionUrl)
-        notifications.show({
-            title: t(baseTranslations.linkCopied),
-            message: t(baseTranslations.linkCopiedToClipboard),
-            color: 'kimiko'
-        })
+
+        if (!(await copyText(subscriptionUrl))) return
+
+        showCopyNotification(
+            t(baseTranslations.linkCopied),
+            t(baseTranslations.linkCopiedToClipboard)
+        )
     }
 
     const handleShowQr = () => {
@@ -134,7 +139,7 @@ export const SubscriptionInfoHeroWidget = ({ isMobile }: IProps) => {
 
         const qrCode = renderSVG(subscriptionUrl, QR_CODE_COLORS)
 
-        modals.open({
+        openDimmedModal({
             centered: true,
             title: t(baseTranslations.getLink),
             classNames: {

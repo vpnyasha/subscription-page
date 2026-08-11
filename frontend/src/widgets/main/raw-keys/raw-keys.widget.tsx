@@ -2,7 +2,6 @@ import {
     ActionIcon,
     Box,
     Card,
-    CopyButton,
     Group,
     Image,
     ScrollArea,
@@ -11,11 +10,13 @@ import {
     Title
 } from '@mantine/core'
 import { IconCheck, IconCopy, IconQrcode } from '@tabler/icons-react'
-import { modals } from '@mantine/modals'
+import { useEffect, useState } from 'react'
 import { renderSVG } from 'uqr'
 
 import { useSubscription } from '@entities/subscription-info-store'
+import { openDimmedModal } from '@shared/utils/dim-modal'
 import { QR_CODE_COLORS } from '@shared/constants'
+import { copyText } from '@shared/utils/copy-text'
 import { vibrate } from '@shared/utils/vibrate'
 import { useTranslation } from '@shared/hooks'
 
@@ -71,14 +72,33 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
     const { t, baseTranslations } = useTranslation()
     const subscription = useSubscription()
 
+    /* Какой ключ скопирован последним — по нему кнопка показывает галочку. */
+    const [copiedLink, setCopiedLink] = useState<null | string>(null)
+
+    useEffect(() => {
+        if (!copiedLink) return undefined
+
+        const timer = setTimeout(() => setCopiedLink(null), 2000)
+        return () => clearTimeout(timer)
+    }, [copiedLink])
+
     if (subscription.links.length === 0) return null
 
     const parsedLinks = parseLinks(subscription.links)
 
+    const handleCopyKey = async (fullLink: string) => {
+        vibrate('drop')
+
+        // Галочка только при удавшемся копировании, иначе она врёт.
+        if (await copyText(fullLink)) {
+            setCopiedLink(fullLink)
+        }
+    }
+
     const handleShowQr = (link: ParsedLink) => {
         const qrCode = renderSVG(link.fullLink, QR_CODE_COLORS)
 
-        modals.open({
+        openDimmedModal({
             centered: true,
             title: link.name,
             classNames: {
@@ -116,10 +136,13 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
                     )}
                 </Group>
 
-                <ScrollArea.Autosize mah={300} scrollbars="y">
+                {/* Потолок рассчитан примерно на шесть строк: с прежними 300px
+                    после укрупнения не помещались даже четыре и список начинал
+                    прокручиваться. Полоса появляется только когда ключей много. */}
+                <ScrollArea.Autosize mah={480} scrollbars="y" scrollbarSize={6} type="auto">
                     <Stack gap="xs">
                         {parsedLinks.map((link, index) => (
-                            <Box className={classes.keyBox} key={index} p="xs">
+                            <Box className={classes.keyBox} key={index} p="sm">
                                 <Box className={classes.keyRow}>
                                     <Box className={classes.keyInfo}>
                                         <KeyMarker />
@@ -127,7 +150,7 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
                                             <Text
                                                 c="var(--mantine-color-text)"
                                                 fw={500}
-                                                size={isMobile ? 'xs' : 'sm'}
+                                                size={isMobile ? 'sm' : 'md'}
                                                 span
                                             >
                                                 {link.name}
@@ -135,26 +158,25 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
                                         </Box>
                                     </Box>
 
+                                    {/* Кнопки крупнее подписи: по ним попадают пальцем,
+                                        а мелкие иконки на телефоне почти не видно. */}
                                     <Group gap={4} wrap="nowrap">
-                                        <CopyButton value={link.fullLink}>
-                                            {({ copied, copy }) => (
-                                                <ActionIcon
-                                                    color={copied ? 'teal' : 'gray'}
-                                                    onClick={() => {
-                                                        vibrate('drop')
-                                                        copy()
-                                                    }}
-                                                    size={isMobile ? 'sm' : 'md'}
-                                                    variant="subtle"
-                                                >
-                                                    {copied ? (
-                                                        <IconCheck size={isMobile ? 14 : 16} />
-                                                    ) : (
-                                                        <IconCopy size={isMobile ? 14 : 16} />
-                                                    )}
-                                                </ActionIcon>
+                                        {/* Не Mantine CopyButton: он ходит только
+                                            в navigator.clipboard, а тот молчит вне
+                                            защищённого контекста — по http кнопка
+                                            не переключалась на галочку. */}
+                                        <ActionIcon
+                                            color={copiedLink === link.fullLink ? 'teal' : 'gray'}
+                                            onClick={() => handleCopyKey(link.fullLink)}
+                                            size={isMobile ? 'lg' : 'xl'}
+                                            variant="subtle"
+                                        >
+                                            {copiedLink === link.fullLink ? (
+                                                <IconCheck size={isMobile ? 20 : 22} />
+                                            ) : (
+                                                <IconCopy size={isMobile ? 20 : 22} />
                                             )}
-                                        </CopyButton>
+                                        </ActionIcon>
 
                                         <ActionIcon
                                             color="kimiko"
@@ -162,10 +184,10 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
                                                 vibrate('tap')
                                                 handleShowQr(link)
                                             }}
-                                            size={isMobile ? 'sm' : 'md'}
+                                            size={isMobile ? 'lg' : 'xl'}
                                             variant="subtle"
                                         >
-                                            <IconQrcode size={isMobile ? 14 : 16} />
+                                            <IconQrcode size={isMobile ? 20 : 22} />
                                         </ActionIcon>
                                     </Group>
                                 </Box>

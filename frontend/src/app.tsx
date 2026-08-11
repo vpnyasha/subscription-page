@@ -15,6 +15,7 @@ import { useMediaQuery } from '@mantine/hooks'
 
 import { kimikoCssVariablesResolver, theme } from '@shared/constants'
 import { initDayjs } from '@shared/utils/time-utils'
+import { useSmoothScroll } from '@shared/hooks'
 
 import { Router } from './app/router/router'
 
@@ -27,6 +28,8 @@ initDayjs()
 export function App() {
     const mq = useMediaQuery('(min-width: 40em)')
 
+    useSmoothScroll()
+
     return (
         <DirectionProvider>
             <MantineProvider
@@ -36,8 +39,37 @@ export function App() {
                 theme={theme}
             >
                 <ModalsProvider>
-                    <Notifications position={mq ? 'top-right' : 'bottom-right'} />
-                    <NavigationProgress />
+                    {/*
+                     * limit: даже с общим id очередь может накопиться, если
+                     * нажимать быстрее, чем уведомление успевает закрыться.
+                     *
+                     * top: стек — fixed-элемент, и стоя у верхнего края он
+                     * попадал в зону, по которой Safari 26 красит статус-бар:
+                     * пока висело уведомление, бар терял прозрачность и белел
+                     * от его подложки. Опущен под шапку, где браузер его уже
+                     * не сэмплит.
+                     */}
+                    <Notifications
+                        limit={1}
+                        position={mq ? 'top-right' : 'top-center'}
+                        styles={{
+                            /*
+                             * pointer-events: контейнер растянут по ширине и
+                             * ловит нажатия даже пустым — под ним переставал
+                             * открываться дропдаун платформ. Клики принимают
+                             * только сами уведомления, ради кнопки закрытия.
+                             */
+                            root: { top: 72, pointerEvents: 'none' },
+                            notification: { pointerEvents: 'auto' }
+                        }}
+                    />
+                    {/*
+                     * className нужен глобальному правилу .nav-progress
+                     * в global.css: полоса висит fixed у верхнего края, и пока
+                     * она в отрисовке, Safari 26 берёт тинт статус-бара из неё
+                     * вместо стекла. Правило прячет её через display: none.
+                     */}
+                    <NavigationProgress className="nav-progress" />
 
                     <Router />
                 </ModalsProvider>

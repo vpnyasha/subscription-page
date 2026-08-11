@@ -5,6 +5,29 @@
     margin-bottom: var(--mantine-spacing-md);
 }
 
+/* Кнопка выбора платформы: под обычное поле, а не под акцентную кнопку. */
+.platformSelect {
+    background: var(--kimiko-surface-raised);
+    border: 1px solid var(--kimiko-border-strong);
+    font-weight: 500;
+}
+
+/* Название прижато влево, шеврон — вправо, как у нативного select. */
+.platformSelectLabel {
+    justify-content: flex-start;
+    flex: 1;
+}
+
+/* Список раскрывается поверх карточек и орнамента, поэтому подложка почти
+   плотная и с сильным размытием — сквозь лёгкую названия платформ терялись. */
+.platformDropdown {
+    background: rgb(247 244 239 / 92%);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border: 1px solid var(--kimiko-border-strong);
+    box-shadow: 0 12px 28px var(--kimiko-shadow-strong);
+}
+
 .appButton {
     position: relative;
     display: flex;
@@ -22,13 +45,17 @@
     transition: all 0.2s ease;
 }
 
-.appButton:hover {
-    background: var(--kimiko-surface-hover);
-    border-left-color: var(--mantine-color-gray-5);
-}
+/* Только для мыши: на тач-экране :hover залипает после тапа, и выбранной
+   выглядела бы последняя нажатая кнопка, а не активная. */
+@media (hover: hover) {
+    .appButton:hover {
+        background: var(--kimiko-surface-hover);
+        border-left-color: var(--mantine-color-gray-5);
+    }
 
-.appButton:hover .bgIcon {
-    opacity: 0.2;
+    .appButton:hover .bgIcon {
+        opacity: 0.2;
+    }
 }
 
 .appButtonActive,

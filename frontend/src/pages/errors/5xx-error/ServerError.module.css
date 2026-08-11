@@ -7,13 +7,20 @@
     justify-content: center;
 }
 
+/*
+ * Цвета достались от апстрима, свёрстанного под тёмную тему: синий номер,
+ * белый заголовок и голубое пояснение на нашем кремовом фоне не читались.
+ * Здесь они переведены на палитру форка.
+ */
 .label {
     text-align: center;
     font-weight: 900;
     font-size: rem(220px);
     line-height: 1;
     margin-bottom: calc(var(--mantine-spacing-xl) * 1.5);
-    color: var(--mantine-color-blue-3);
+
+    /* Номер ошибки — крупная подложка, поэтому акцент приглушён. */
+    color: var(--kimiko-accent-soft-hover);
 
     @media (max-width: $mantine-breakpoint-sm) {
         font-size: rem(120px);
@@ -24,7 +31,7 @@
     text-align: center;
     font-weight: 900;
     font-size: rem(38px);
-    color: var(--mantine-color-white);
+    color: var(--mantine-color-text);
 
     @media (max-width: $mantine-breakpoint-sm) {
         font-size: rem(32px);
@@ -36,5 +43,5 @@
     margin: auto;
     margin-top: var(--mantine-spacing-xl);
     margin-bottom: calc(var(--mantine-spacing-xl) * 1.5);
-    color: var(--mantine-color-blue-1);
+    color: var(--mantine-color-dimmed);
 }

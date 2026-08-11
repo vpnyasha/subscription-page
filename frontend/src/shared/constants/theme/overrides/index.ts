@@ -7,6 +7,7 @@ import layouts from './layouts'
 import tooltip from './tooltip'
 import drawer from './drawer'
 import inputs from './inputs'
+import modal from './modal'
 import badge from './badge'
 import table from './table'
 import card from './card'
@@ -21,6 +22,7 @@ export default {
     ...inputs,
     ...loadingOverlay,
     ...menu,
+    ...modal,
     ...notification,
     ...ringProgress,
     ...table,

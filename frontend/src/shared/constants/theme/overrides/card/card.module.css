@@ -16,9 +16,12 @@
         box-shadow 0.3s ease;
 }
 
-.root:hover {
-    border-color: var(--mantine-color-kimiko-3);
-    box-shadow: 0 12px 28px var(--kimiko-shadow-strong);
+/* Только для мыши: на тач-экране :hover залипает после тапа. */
+@media (hover: hover) {
+    .root:hover {
+        border-color: var(--mantine-color-kimiko-3);
+        box-shadow: 0 12px 28px var(--kimiko-shadow-strong);
+    }
 }
 
 /* Содержимое всегда выше орнамента: иначе цветы и точки лезут на плитки. */
