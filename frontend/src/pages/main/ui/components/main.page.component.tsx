@@ -15,7 +15,8 @@ import {
 } from '@widgets/main'
 import { useAppConfig, useAppConfigStoreActions, useCurrentLang } from '@entities/app-config-store'
 import { LanguagePicker } from '@shared/ui/language-picker/language-picker.shared'
-import { Page, RemnawaveLogo } from '@shared/ui'
+import { BRAND_LOGO_URL } from '@shared/constants'
+import { Page } from '@shared/ui'
 
 interface IMainPageComponentProps {
     isMobile: boolean
@@ -42,13 +43,6 @@ export const MainPageComponent = ({ isMobile, platform }: IMainPageComponentProp
     const { setLanguage } = useAppConfigStoreActions()
 
     const brandName = config.brandingSettings.title
-    let hasCustomLogo = !!config.brandingSettings.logoUrl
-
-    if (hasCustomLogo) {
-        if (config.brandingSettings.logoUrl.includes('docs.rw')) {
-            hasCustomLogo = false
-        }
-    }
 
     const hasPlatformApps: Record<TSubscriptionPagePlatformKey, boolean> = {
         ios: Boolean(config.platforms.ios?.apps.length),
@@ -67,30 +61,25 @@ export const MainPageComponent = ({ isMobile, platform }: IMainPageComponentProp
 
     return (
         <Page>
-            <Box className="header-wrapper" py="md">
-                <Container maw={1200} px={{ base: 'md', sm: 'lg', md: 'xl' }}>
+            <Container maw={1200} pt="md" px={{ base: 'md', sm: 'lg', md: 'xl' }}>
+                <Box
+                    className="header-wrapper"
+                    px={{ base: 'sm', xs: 'md', sm: 'lg', md: 'xl' }}
+                    py="md"
+                >
                     <Group justify="space-between">
                         <Group gap="sm" style={{ userSelect: 'none' }} wrap="nowrap">
-                            {hasCustomLogo ? (
-                                <Image
-                                    alt="logo"
-                                    fit="contain"
-                                    src={config.brandingSettings.logoUrl}
-                                    style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        flexShrink: 0
-                                    }}
-                                />
-                            ) : (
-                                <RemnawaveLogo c="cyan" size={32} />
-                            )}
-                            <Title
-                                c={hasCustomLogo ? 'white' : 'cyan'}
-                                fw={700}
-                                order={4}
-                                size="lg"
-                            >
+                            <Image
+                                alt="logo"
+                                fit="contain"
+                                src={BRAND_LOGO_URL}
+                                style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    flexShrink: 0
+                                }}
+                            />
+                            <Title c="kimiko" fw={700} order={4} size="lg">
                                 {brandName}
                             </Title>
                         </Group>
@@ -100,8 +89,8 @@ export const MainPageComponent = ({ isMobile, platform }: IMainPageComponentProp
                             supportUrl={config.brandingSettings.supportUrl}
                         />
                     </Group>
-                </Container>
-            </Box>
+                </Box>
+            </Container>
 
             <Container
                 maw={1200}

@@ -82,7 +82,7 @@ export const SubscriptionInfoCollapsedWidget = ({ isMobile }: IProps) => {
 
                         <Stack gap={0} style={{ minWidth: 0, flex: 1 }}>
                             <Text
-                                c="white"
+                                c="var(--mantine-color-text)"
                                 fw={600}
                                 size={isMobile ? 'sm' : 'md'}
                                 style={{

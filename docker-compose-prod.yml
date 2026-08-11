@@ -1,6 +1,8 @@
 services:
   remnawave-subscription-page:
-    image: remnawave/subscription-page:latest
+    # Образ форка из GHCR. Путь должен совпадать с owner/repo на GitHub
+    # в нижнем регистре — именно так его публикует .github/workflows/build-and-push.yml
+    image: ghcr.io/vpnyasha/subscription-page:latest
     container_name: remnawave-subscription-page
     hostname: remnawave-subscription-page
     restart: always

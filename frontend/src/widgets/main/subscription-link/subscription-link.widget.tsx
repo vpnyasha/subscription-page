@@ -14,6 +14,7 @@ import { renderSVG } from 'uqr'
 
 import { constructSubscriptionUrl } from '@shared/utils/construct-subscription-url'
 import { useSubscription } from '@entities/subscription-info-store'
+import { QR_CODE_COLORS } from '@shared/constants'
 import { vibrate } from '@shared/utils/vibrate'
 import { useTranslation } from '@shared/hooks'
 
@@ -38,7 +39,7 @@ export const SubscriptionLinkWidget = ({ supportUrl, hideGetLink }: IProps) => {
         notifications.show({
             title: t(baseTranslations.linkCopied),
             message: t(baseTranslations.linkCopiedToClipboard),
-            color: 'cyan'
+            color: 'kimiko'
         })
         clipboard.copy(subscriptionUrl)
     }
@@ -56,7 +57,7 @@ export const SubscriptionLinkWidget = ({ supportUrl, hideGetLink }: IProps) => {
 
         const { icon: Icon, color } = matchedPlatform
             ? matchedPlatform[1]
-            : { icon: IconMessageChatbot, color: 'cyan' }
+            : { icon: IconMessageChatbot, color: 'kimiko' }
 
         return (
             <ActionIcon
@@ -67,8 +68,8 @@ export const SubscriptionLinkWidget = ({ supportUrl, hideGetLink }: IProps) => {
                 rel="noopener noreferrer"
                 size="xl"
                 style={{
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                    background: 'var(--kimiko-surface)',
+                    border: '1px solid var(--kimiko-border-strong)'
                 }}
                 target="_blank"
                 variant="default"
@@ -81,10 +82,7 @@ export const SubscriptionLinkWidget = ({ supportUrl, hideGetLink }: IProps) => {
     const handleGetLink = () => {
         vibrate('tap')
 
-        const subscriptionQrCode = renderSVG(subscriptionUrl, {
-            whiteColor: '#161B22',
-            blackColor: '#22d3ee'
-        })
+        const subscriptionQrCode = renderSVG(subscriptionUrl, QR_CODE_COLORS)
 
         modals.open({
             centered: true,
@@ -100,7 +98,7 @@ export const SubscriptionLinkWidget = ({ supportUrl, hideGetLink }: IProps) => {
                         src={`data:image/svg+xml;utf8,${encodeURIComponent(subscriptionQrCode)}`}
                         style={{ borderRadius: 'var(--mantine-radius-md)' }}
                     />
-                    <Text c="white" fw={600} size="lg" ta="center">
+                    <Text c="var(--mantine-color-text)" fw={600} size="lg" ta="center">
                         {t(baseTranslations.scanQrCode)}
                     </Text>
                     <Text c="dimmed" size="sm" ta="center">

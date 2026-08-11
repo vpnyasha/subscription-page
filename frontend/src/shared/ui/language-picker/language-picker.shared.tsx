@@ -56,8 +56,8 @@ export function LanguagePicker(props: IProps) {
                     radius="md"
                     size="xl"
                     style={{
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)'
+                        background: 'var(--kimiko-surface)',
+                        border: '1px solid var(--kimiko-border-strong)'
                     }}
                     variant="default"
                 >

@@ -1,11 +1,11 @@
 .accordionItem {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--kimiko-surface-raised);
+    border: 1px solid var(--kimiko-border);
 }
 
 .accordionItem[data-active] {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(34, 211, 238, 0.3);
+    background: var(--kimiko-accent-soft);
+    border-color: rgba(140, 47, 42, 0.3);
 }
 
 .accordionControl {
@@ -14,7 +14,7 @@
 }
 
 .accordionControl:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--kimiko-surface-hover);
     border-radius: var(--mantine-radius-lg);
 }
 

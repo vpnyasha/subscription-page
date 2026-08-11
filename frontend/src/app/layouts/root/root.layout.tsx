@@ -25,6 +25,10 @@ export function RootLayout() {
     const isConfigLoaded = useIsConfigLoaded()
 
     useLayoutEffect(() => {
+        // На узком экране помещается только одна декоративная фигура —
+        // сторону выбираем при загрузке, CSS показывает соответствующую.
+        document.body.dataset.kimikoDecor = Math.random() < 0.5 ? 'left' : 'right'
+
         const subPageDiv = document.getElementById('sbpg')
 
         if (subPageDiv) {

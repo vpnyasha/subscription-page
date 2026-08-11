@@ -5,12 +5,47 @@ import removeConsole from 'vite-plugin-remove-console'
 import webfontDownload from 'vite-plugin-webfont-dl'
 import { ViteEjsPlugin } from 'vite-plugin-ejs'
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, Plugin } from 'vite'
+import { readFileSync } from 'node:fs'
 import 'dotenv/config'
+
+const APP_CONFIG_ROUTE = '/assets/.app-config-v2.json'
+
+/**
+ * В проде конфиг страницы отдаёт бэкенд, поэтому локально его подменяет этот
+ * плагин: фикстура читается из dev-fixtures/ и не попадает в сборку.
+ * Сгенерировать её — npm run dev:fixtures.
+ */
+function devAppConfig(): Plugin {
+    return {
+        name: 'kimiko-dev-config',
+        apply: 'serve',
+        configureServer(server) {
+            server.middlewares.use((req, res, next) => {
+                if (!req.url?.split('?')[0]?.endsWith(APP_CONFIG_ROUTE)) {
+                    return next()
+                }
+
+                try {
+                    const body = readFileSync(
+                        new URL('./dev-fixtures/app-config-v2.json', import.meta.url),
+                        'utf8'
+                    )
+                    res.setHeader('Content-Type', 'application/json')
+                    res.end(body)
+                } catch {
+                    res.statusCode = 404
+                    res.end('{"error":"run: npm run dev:fixtures"}')
+                }
+            })
+        }
+    }
+}
 
 export default defineConfig({
     plugins: [
         react(),
+        devAppConfig(),
         removeConsole(),
         webfontDownload(undefined, {}),
         ViteEjsPlugin((viteConfig) => {

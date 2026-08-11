@@ -1,8 +1,15 @@
 .root {
     position: relative;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    /* Свой контекст наложения, чтобы орнамент оставался под содержимым. */
+    isolation: isolate;
+    background: var(--kimiko-surface);
+    border: 1px solid var(--kimiko-border);
     overflow: hidden;
+
+    /* Размывает только подложку под карточкой, содержимое не трогает. */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     transition:
         background 0.3s ease,
         border-color 0.3s ease,
@@ -10,17 +17,79 @@
 }
 
 .root:hover {
-    border-color: rgba(34, 211, 238, 0.3);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-color: var(--mantine-color-kimiko-3);
+    box-shadow: 0 12px 28px var(--kimiko-shadow-strong);
 }
 
+/* Содержимое всегда выше орнамента: иначе цветы и точки лезут на плитки. */
+.root > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Вертикальная подпись у левого края — тот же мотив, что на подложке страницы. */
 .root::before {
+    content: 'キミコ';
+    position: absolute;
+    z-index: 0;
+    bottom: 34px;
+    left: 8px;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    letter-spacing: 0.3em;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--mantine-color-kimiko-3);
+    opacity: 0.55;
+    pointer-events: none;
+    user-select: none;
+}
+
+/*
+ * Орнамент карточки — те же мотивы, что на подложке страницы. Элементы стоят
+ * в поле внутренних отступов, поэтому не наезжают на содержимое.
+ */
+.root::after {
     content: '';
     position: absolute;
+    z-index: 0;
     inset: 0;
-    z-index: -1;
     border-radius: inherit;
-    background: transparent;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    opacity: 0.45;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-image:
+        url('/assets/decor/flower.svg'), url('/assets/decor/dots.svg'),
+        url('/assets/decor/cross.svg'), url('/assets/decor/spark.svg');
+    background-position:
+        right 14px bottom 12px,
+        right 18px top 14px,
+        left 16px bottom 16px,
+        left 22px top 14px;
+    background-size:
+        20px 20px,
+        16px 16px,
+        9px 9px,
+        11px 11px;
+}
+
+/* Только у карточек верхнего уровня: во вложенных шагах орнамент дробит макет. */
+.root .root::after,
+.root .root::before {
+    display: none;
+}
+
+/* На узких экранах внутренние отступы малы — подпись липла бы к плиткам. */
+@media (max-width: 768px) {
+    .root::before {
+        display: none;
+    }
+}
+
+/* Размытие съедало фигуру, которая на узком экране видна только сквозь карточки. */
+@media (max-width: 1100px) {
+    .root {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
 }

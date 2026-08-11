@@ -1,5 +1,6 @@
 import { createTheme } from '@mantine/core'
 
+import { kimikoAccent, kimikoColors, kimikoSand } from './palette'
 import components from './overrides'
 
 export const theme = createTheme({
@@ -21,20 +22,29 @@ export const theme = createTheme({
     scale: 1,
     fontSmoothing: true,
     focusRing: 'never',
-    white: '#ffffff',
-    black: '#24292f',
+    white: kimikoColors.surfaceRaised,
+    black: kimikoColors.text,
     colors: {
+        // Основной акцент темы. Имена вроде `cyan` намеренно не переопределены:
+        // ими пользуется конфиг панели (svgIconColor), и иконка, заказавшая
+        // голубой, должна остаться голубой.
+        kimiko: kimikoAccent,
+
+        // Нейтраль Mantine в светлой схеме берётся из `gray`:
+        // отсюда цвет границ, плейсхолдеров и приглушённого текста.
+        gray: kimikoSand,
+
         dark: [
-            '#c9d1d9',
-            '#b1bac4',
-            '#8b949e',
-            '#6e7681',
-            '#484f58',
-            '#30363d',
-            '#21262d',
-            '#161b22',
-            '#0d1117',
-            '#010409'
+            '#2b2724',
+            '#3a3531',
+            '#514a43',
+            '#6e665d',
+            '#ab9f8d',
+            '#d5cabb',
+            '#ebe5da',
+            '#f2eee7',
+            '#faf8f4',
+            '#ffffff'
         ],
 
         blue: [
@@ -84,10 +94,49 @@ export const theme = createTheme({
             '#762c00',
             '#5c2200',
             '#471700'
+        ],
+
+        // Статусные цвета приглушены под тёплую бумагу: дефолтные Mantine
+        // teal/red/violet на кремовом фоне выглядят кислотными.
+        teal: [
+            '#e9f2ec',
+            '#d3e5da',
+            '#a8cbb8',
+            '#7db095',
+            '#549677',
+            '#3b7d5e',
+            '#2f6b52',
+            '#255744',
+            '#1c4335',
+            '#132f25'
+        ],
+        red: [
+            '#fbeceb',
+            '#f6dbd9',
+            '#e9b4b0',
+            '#dc8d87',
+            '#cb6960',
+            '#b34a41',
+            '#9c342c',
+            '#832823',
+            '#6a1e1a',
+            '#4f1512'
+        ],
+        violet: [
+            '#f1eef6',
+            '#e2dcee',
+            '#c5b9dc',
+            '#a795c9',
+            '#8c76b6',
+            '#755d9f',
+            '#644e88',
+            '#523f6f',
+            '#413156',
+            '#2f233e'
         ]
     },
-    primaryShade: 8,
-    primaryColor: 'cyan',
+    primaryShade: { light: 6, dark: 6 },
+    primaryColor: 'kimiko',
     autoContrast: true,
     luminanceThreshold: 0.3,
     headings: {

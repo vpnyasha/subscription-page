@@ -5,16 +5,16 @@ import '@gfazioli/mantine-spinner/styles.css'
 
 import './global.css'
 
-import { DirectionProvider, MantineProvider, v8CssVariablesResolver } from '@mantine/core'
 import { polyfillCountryFlagEmojis } from 'country-flag-emoji-polyfill'
+import { DirectionProvider, MantineProvider } from '@mantine/core'
 import { enableMainThreadBlocking } from 'ios-vibrator-pro-max'
 import { NavigationProgress } from '@mantine/nprogress'
 import { Notifications } from '@mantine/notifications'
 import { ModalsProvider } from '@mantine/modals'
 import { useMediaQuery } from '@mantine/hooks'
 
+import { kimikoCssVariablesResolver, theme } from '@shared/constants'
 import { initDayjs } from '@shared/utils/time-utils'
-import { theme } from '@shared/constants'
 
 import { Router } from './app/router/router'
 
@@ -30,8 +30,9 @@ export function App() {
     return (
         <DirectionProvider>
             <MantineProvider
-                cssVariablesResolver={v8CssVariablesResolver}
-                defaultColorScheme="dark"
+                cssVariablesResolver={kimikoCssVariablesResolver}
+                defaultColorScheme="light"
+                forceColorScheme="light"
                 theme={theme}
             >
                 <ModalsProvider>

@@ -1,44 +1,56 @@
+/*
+ * Пастельные заливки статусов из исходной темы Kimiko: тон приглушён под
+ * кремовую бумагу, рамка того же цвета, но насыщеннее.
+ */
 .infoBlock {
     padding: var(--mantine-spacing-xs);
     border-radius: var(--mantine-radius-md);
+    border: 1px solid var(--kimiko-border);
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.infoBlock:hover {
+    transform: translateY(-2px);
 }
 
 .blue {
-    background: linear-gradient(135deg, rgba(34, 139, 230, 0.1) 0%, rgba(28, 126, 214, 0.05) 100%);
-    border: 1px solid rgba(34, 139, 230, 0.2);
+    background: #e4e8f0;
+    border-color: #a8b4c8;
 }
 
 .cyan {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
-    border: 1px solid rgba(34, 211, 238, 0.2);
+    background: #e2eef0;
+    border-color: #8fb8bf;
 }
 
 .green {
-    background: linear-gradient(135deg, rgba(64, 192, 87, 0.1) 0%, rgba(55, 178, 77, 0.05) 100%);
-    border: 1px solid rgba(64, 192, 87, 0.2);
+    background: #eaf3de;
+    border-color: #97c459;
 }
 
 .teal {
-    background: linear-gradient(135deg, rgba(32, 201, 151, 0.1) 0%, rgba(18, 184, 134, 0.05) 100%);
-    border: 1px solid rgba(32, 201, 151, 0.2);
+    background: #e4ede7;
+    border-color: #86b39a;
 }
 
 .red {
-    background: linear-gradient(135deg, rgba(250, 82, 82, 0.1) 0%, rgba(224, 49, 49, 0.05) 100%);
-    border: 1px solid rgba(250, 82, 82, 0.2);
+    background: #f6ecea;
+    border-color: #c98a84;
 }
 
 .yellow {
-    background: linear-gradient(135deg, rgba(250, 176, 5, 0.1) 0%, rgba(245, 159, 0, 0.05) 100%);
-    border: 1px solid rgba(250, 176, 5, 0.2);
+    background: #faeeda;
+    border-color: #ef9f27;
 }
 
 .orange {
-    background: linear-gradient(135deg, rgba(253, 126, 20, 0.1) 0%, rgba(247, 103, 7, 0.05) 100%);
-    border: 1px solid rgba(253, 126, 20, 0.2);
+    background: #faeada;
+    border-color: #e08b4a;
 }
 
 .violet {
-    background: linear-gradient(135deg, rgba(151, 117, 250, 0.1) 0%, rgba(132, 94, 247, 0.05) 100%);
-    border: 1px solid rgba(151, 117, 250, 0.2);
+    background: #eeeaf5;
+    border-color: #a394c4;
 }

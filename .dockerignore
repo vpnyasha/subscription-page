@@ -1,0 +1,24 @@
+# Образ собирается из backend/src и готового frontend/dist — остальное только
+# раздувает контекст сборки.
+**/node_modules
+**/.git
+**/.github
+**/dist
+!frontend/dist
+backend/dist
+
+**/.env
+**/.env.*
+!**/.env.sample
+
+frontend/dev-fixtures
+frontend/src
+frontend/public
+frontend/index.html
+frontend/*.config.*
+frontend/tsconfig*.json
+
+**/*.log
+**/.DS_Store
+**/.vscode
+**/.idea

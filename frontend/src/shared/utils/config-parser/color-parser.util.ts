@@ -1,3 +1,8 @@
+/**
+ * Цвета иконок задаются в конфиге панели по имени, поэтому таблица оставлена
+ * как в апстриме: голубой остаётся голубым, зелёный — зелёным. Под светлую тему
+ * подстроен только способ смешивания (см. mixWithSurface ниже).
+ */
 const COLORS: Record<string, [number, number, number]> = {
     cyan: [34, 211, 238],
     teal: [32, 201, 151],
@@ -16,6 +21,16 @@ const COLORS: Record<string, [number, number, number]> = {
 }
 
 const DEFAULT_COLOR = COLORS.cyan
+
+/** Базовая поверхность, с которой смешиваются акцентные подложки. */
+const SURFACE: [number, number, number] = [242, 238, 231]
+
+const mixWithSurface = (rgb: [number, number, number], amount: number): string => {
+    const mixed = rgb.map((channel, index) =>
+        Math.round(channel * amount + SURFACE[index] * (1 - amount))
+    )
+    return `rgb(${mixed.join(', ')})`
+}
 
 const hexToRgb = (hex: string): [number, number, number] | null => {
     const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
@@ -40,13 +55,12 @@ export const getColorGradient = (color: string): ColorGradientStyle => {
 }
 
 export const getColorGradientSolid = (color: string): ColorGradientStyle => {
-    const [r, g, b] = getRgb(color)
-    const dark1 = [22 + r * 0.08, 27 + g * 0.08, 35 + b * 0.08].map(Math.floor)
-    const dark2 = [20 + r * 0.05, 24 + g * 0.05, 30 + b * 0.05].map(Math.floor)
+    const rgb = getRgb(color)
+    const [r, g, b] = rgb
 
     return {
-        background: `linear-gradient(135deg, rgb(${dark1}) 0%, rgb(${dark2}) 100%)`,
-        border: `1px solid rgba(${r},${g},${b},0.4)`,
-        boxShadow: `inset 0 0 20px rgba(${r},${g},${b},0.15)`
+        background: `linear-gradient(135deg, ${mixWithSurface(rgb, 0.16)} 0%, ${mixWithSurface(rgb, 0.08)} 100%)`,
+        border: `1px solid rgba(${r},${g},${b},0.35)`,
+        boxShadow: `inset 0 0 20px rgba(${r},${g},${b},0.08)`
     }
 }

@@ -11,11 +11,12 @@ import {
     Text,
     Title
 } from '@mantine/core'
-import { IconCheck, IconCopy, IconKey, IconQrcode } from '@tabler/icons-react'
+import { IconCheck, IconCopy, IconQrcode } from '@tabler/icons-react'
 import { modals } from '@mantine/modals'
 import { renderSVG } from 'uqr'
 
 import { useSubscription } from '@entities/subscription-info-store'
+import { QR_CODE_COLORS } from '@shared/constants'
 import { vibrate } from '@shared/utils/vibrate'
 import { useTranslation } from '@shared/hooks'
 
@@ -25,6 +26,22 @@ interface ParsedLink {
     fullLink: string
     name: string
 }
+
+/**
+ * Маркер строки: флаг в названии сервера уже работает как иконка, поэтому
+ * рядом стоит нейтральная точка, а не второй рисунок.
+ */
+const KeyMarker = () => (
+    <Box
+        style={{
+            width: 6,
+            height: 6,
+            flexShrink: 0,
+            borderRadius: '50%',
+            background: 'var(--mantine-color-kimiko-4)'
+        }}
+    />
+)
 
 const parseLinks = (links: string[]): ParsedLink[] => {
     return links.map((link) => {
@@ -60,10 +77,7 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
     const parsedLinks = parseLinks(subscription.links)
 
     const handleShowQr = (link: ParsedLink) => {
-        const qrCode = renderSVG(link.fullLink, {
-            whiteColor: '#161B22',
-            blackColor: '#22d3ee'
-        })
+        const qrCode = renderSVG(link.fullLink, QR_CODE_COLORS)
 
         modals.open({
             centered: true,
@@ -91,11 +105,11 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
         <Card p={{ base: 'sm', xs: 'md', sm: 'lg', md: 'xl' }} radius="lg">
             <Stack gap="md">
                 <Group gap="sm" justify="space-between">
-                    <Title c="white" fw={600} order={4}>
+                    <Title c="var(--mantine-color-text)" fw={600} order={4}>
                         {t(baseTranslations.connectionKeysHeader)}
                     </Title>
                     {parsedLinks.length > 1 && (
-                        <Badge color="cyan" size="lg" variant="light">
+                        <Badge color="kimiko" size="lg" variant="light">
                             {parsedLinks.length}
                         </Badge>
                     )}
@@ -107,16 +121,10 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
                             <Box className={classes.keyBox} key={index} p="xs">
                                 <Box className={classes.keyRow}>
                                     <Box className={classes.keyInfo}>
-                                        <IconKey
-                                            size={isMobile ? 16 : 18}
-                                            style={{
-                                                color: 'var(--mantine-color-cyan-4)',
-                                                flexShrink: 0
-                                            }}
-                                        />
+                                        <KeyMarker />
                                         <Box className={classes.keyName}>
                                             <Text
-                                                c="white"
+                                                c="var(--mantine-color-text)"
                                                 fw={500}
                                                 size={isMobile ? 'xs' : 'sm'}
                                                 span
@@ -148,7 +156,7 @@ export const RawKeysWidget = ({ isMobile }: IProps) => {
                                         </CopyButton>
 
                                         <ActionIcon
-                                            color="cyan"
+                                            color="kimiko"
                                             onClick={() => {
                                                 vibrate('tap')
                                                 handleShowQr(link)

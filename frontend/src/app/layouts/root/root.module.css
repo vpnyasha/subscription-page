@@ -8,6 +8,10 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+
+    /* Над декоративными фигурами в body::before / body::after. */
+    position: relative;
+    z-index: 2;
 }
 
 .main {

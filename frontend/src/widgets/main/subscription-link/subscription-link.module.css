@@ -1,8 +1,8 @@
 .modalContent {
-    background: rgba(22, 27, 35, 0.95);
+    background: var(--kimiko-surface-solid);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--kimiko-border);
 }
 
 .modalHeader {
@@ -11,10 +11,18 @@
 
 .modalTitle {
     font-weight: 600;
-    color: white;
+    color: var(--mantine-color-text);
 }
 
 .actionIcon {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--kimiko-surface);
+    border: 1px solid var(--kimiko-border-strong);
+    color: var(--mantine-color-kimiko-6);
+    transition: all 0.2s ease;
+}
+
+.actionIcon:hover {
+    background: var(--kimiko-accent-soft);
+    border-color: var(--mantine-color-kimiko-6);
+    transform: translateY(-1px);
 }

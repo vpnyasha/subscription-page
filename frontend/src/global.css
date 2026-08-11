@@ -1,17 +1,121 @@
+/*
+ * Kimiko — базовое оформление страницы.
+ * Палитра и токены живут в shared/constants/theme, здесь только раскладка фона,
+ * шапки и декоративного слоя.
+ */
+
+:root {
+    /*
+     * Декоративные фигуры по краям экрана. Положите свои PNG с прозрачностью
+     * в frontend/public/assets/decor/ и при необходимости поправьте пути.
+     * Чтобы полностью отключить декор — задайте обеим переменным значение none.
+     */
+    --kimiko-decor-left: url('/assets/decor/left.webp');
+    --kimiko-decor-right: url('/assets/decor/right.webp');
+
+    /*
+     * Фигуры прижаты к краям и низу, лишнее срезается границами экрана.
+     * Ширина взята с запасом относительно пропорций картинок, чтобы размер
+     * задавала высота: left ≈ 0.66, right ≈ 0.71 от высоты.
+     */
+    --kimiko-decor-left-width: min(32vw, 500px);
+    --kimiko-decor-right-width: min(34vw, 540px);
+    /* Фигуры занимают низ экрана, верхние ~20vh отданы орнаменту. */
+    --kimiko-decor-height: 80vh;
+    --kimiko-decor-offset: -30px;
+
+    /*
+     * Фигуры рисуются в полную силу. Значения оставлены переменными: если
+     * иллюстрация начнёт перетягивать внимание, её приглушают здесь, не трогая
+     * разметку — например saturate(0.6) и opacity 0.55.
+     */
+    --kimiko-decor-left-opacity: 1;
+    --kimiko-decor-left-filter: none;
+    --kimiko-decor-right-opacity: 1;
+    --kimiko-decor-right-filter: none;
+}
+
 html,
 body {
     min-height: 100vh;
-    background-color: #161b23;
-    background-image:
-        linear-gradient(to right, rgba(128, 128, 128, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(128, 128, 128, 0.05) 1px, transparent 1px);
-    background-size: 60px 60px;
-    background-attachment: fixed;
+
+    /* Готовая подложка: сетка, цветы и линии по краям, центр под контент. */
+    background: var(--mantine-color-body) url('/assets/decor/background.webp') no-repeat center /
+        cover fixed;
     position: relative;
 }
 
 #root {
     height: 100vh;
+}
+
+/* Декор рисуется под контентом и не перехватывает клики. */
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    bottom: var(--kimiko-decor-bottom, 0);
+    z-index: 0;
+    height: var(--kimiko-decor-height);
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+
+body::before {
+    left: var(--kimiko-decor-offset);
+    width: var(--kimiko-decor-left-width);
+    opacity: var(--kimiko-decor-left-opacity);
+    filter: var(--kimiko-decor-left-filter);
+    background-image: var(--kimiko-decor-left);
+    background-position: bottom left;
+}
+
+body::after {
+    right: var(--kimiko-decor-offset);
+    width: var(--kimiko-decor-right-width);
+    opacity: var(--kimiko-decor-right-opacity);
+    filter: var(--kimiko-decor-right-filter);
+    background-image: var(--kimiko-decor-right);
+    background-position: bottom right;
+}
+
+@media (max-width: 1400px) {
+    :root {
+        --kimiko-decor-height: 70vh;
+        --kimiko-decor-left-width: min(26vw, 330px);
+        --kimiko-decor-right-width: min(26vw, 330px);
+    }
+}
+
+/*
+ * На узком экране обе фигуры не помещаются: показываем одну, выбранную при
+ * загрузке (см. root.layout.tsx), уменьшенную и прижатую к своему краю.
+ */
+@media (max-width: 1100px) {
+    :root {
+        /* Приподнята над низом: внизу её полностью закрывали бы карточки. */
+        --kimiko-decor-bottom: 14vh;
+        --kimiko-decor-height: 52vh;
+        --kimiko-decor-left-width: min(48vw, 300px);
+        --kimiko-decor-offset: -20px;
+        --kimiko-decor-right-width: min(48vw, 300px);
+
+        /* Колонка занимает почти всю ширину, поэтому фигуру видно только
+           сквозь карточки — делаем их заметно прозрачнее. */
+        --kimiko-surface: rgba(242, 238, 231, 0.62);
+        --kimiko-surface-raised: rgba(247, 244, 239, 0.45);
+    }
+
+    body::before,
+    body::after {
+        display: none;
+    }
+
+    body[data-kimiko-decor='left']::before,
+    body[data-kimiko-decor='right']::after {
+        display: block;
+    }
 }
 
 .animated-background {
@@ -22,69 +126,69 @@ body {
     bottom: 0;
     pointer-events: none;
     z-index: 0;
-    background:
-        radial-gradient(ellipse 60% 40% at 25% 40%, rgba(151, 117, 250, 0.08), transparent 50%),
-        radial-gradient(ellipse 50% 50% at 85% 85%, rgba(34, 211, 238, 0.06), transparent 50%);
+
+    /* Подсветка убрана: рисунок фона уже задаёт всю фактуру страницы. */
+    background: none;
 }
 
+/* Шапка живёт внутри того же контейнера, что и карточки, поэтому её края
+   совпадают с ними, а не растягиваются на всю колонку. */
 .header-wrapper {
     position: sticky;
-    top: 0;
+    top: var(--mantine-spacing-md);
     z-index: 100;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    background: rgba(22, 27, 35, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-
-    @media (min-width: 768px) {
-        border-radius: 0 0 var(--mantine-radius-lg) var(--mantine-radius-lg);
-    }
+    background: var(--kimiko-surface);
+    border: 1px solid var(--kimiko-border);
+    border-radius: var(--mantine-radius-lg);
+    box-shadow: 0 1px 3px var(--kimiko-shadow);
 }
 
 .logo-text-highlight {
-    color: var(--mantine-color-cyan-4);
+    color: var(--mantine-color-kimiko-6);
 }
 
 .logo-text-normal {
-    color: white;
+    color: var(--mantine-color-text);
 }
 
 .info-card-cyan {
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.1) 0%, rgba(6, 182, 212, 0.05) 100%);
-    border: 1px solid rgba(34, 211, 238, 0.2);
+    background: linear-gradient(135deg, rgba(14, 116, 130, 0.1) 0%, rgba(14, 116, 130, 0.05) 100%);
+    border: 1px solid rgba(14, 116, 130, 0.2);
 }
 
 .info-card-violet {
-    background: linear-gradient(135deg, rgba(151, 117, 250, 0.1) 0%, rgba(132, 94, 247, 0.05) 100%);
-    border: 1px solid rgba(151, 117, 250, 0.2);
+    background: linear-gradient(135deg, rgba(100, 78, 136, 0.1) 0%, rgba(100, 78, 136, 0.05) 100%);
+    border: 1px solid rgba(100, 78, 136, 0.2);
 }
 
 .info-card-green {
-    background: linear-gradient(135deg, rgba(64, 192, 87, 0.1) 0%, rgba(55, 178, 77, 0.05) 100%);
-    border: 1px solid rgba(64, 192, 87, 0.2);
+    background: linear-gradient(135deg, rgba(26, 127, 55, 0.1) 0%, rgba(26, 127, 55, 0.05) 100%);
+    border: 1px solid rgba(26, 127, 55, 0.2);
 }
 
 .info-card-red {
-    background: linear-gradient(135deg, rgba(250, 82, 82, 0.1) 0%, rgba(224, 49, 49, 0.05) 100%);
-    border: 1px solid rgba(250, 82, 82, 0.2);
+    background: linear-gradient(135deg, rgba(156, 52, 44, 0.1) 0%, rgba(156, 52, 44, 0.05) 100%);
+    border: 1px solid rgba(156, 52, 44, 0.2);
 }
 
 .info-card-yellow {
-    background: linear-gradient(135deg, rgba(250, 176, 5, 0.1) 0%, rgba(245, 159, 0, 0.05) 100%);
-    border: 1px solid rgba(250, 176, 5, 0.2);
+    background: linear-gradient(135deg, rgba(154, 103, 0, 0.1) 0%, rgba(154, 103, 0, 0.05) 100%);
+    border: 1px solid rgba(154, 103, 0, 0.2);
 }
 
 .info-card-blue {
-    background: linear-gradient(135deg, rgba(34, 139, 230, 0.1) 0%, rgba(28, 126, 214, 0.05) 100%);
-    border: 1px solid rgba(34, 139, 230, 0.2);
+    background: linear-gradient(135deg, rgba(9, 105, 218, 0.1) 0%, rgba(9, 105, 218, 0.05) 100%);
+    border: 1px solid rgba(9, 105, 218, 0.2);
 }
 
 .info-card-teal {
-    background: linear-gradient(135deg, rgba(32, 201, 151, 0.1) 0%, rgba(18, 184, 134, 0.05) 100%);
-    border: 1px solid rgba(32, 201, 151, 0.2);
+    background: linear-gradient(135deg, rgba(47, 107, 82, 0.1) 0%, rgba(47, 107, 82, 0.05) 100%);
+    border: 1px solid rgba(47, 107, 82, 0.2);
 }
 
 .info-card-orange {
-    background: linear-gradient(135deg, rgba(253, 126, 20, 0.1) 0%, rgba(247, 103, 7, 0.05) 100%);
-    border: 1px solid rgba(253, 126, 20, 0.2);
+    background: linear-gradient(135deg, rgba(188, 76, 0, 0.1) 0%, rgba(188, 76, 0, 0.05) 100%);
+    border: 1px solid rgba(188, 76, 0, 0.2);
 }
