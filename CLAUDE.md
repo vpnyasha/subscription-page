@@ -10,7 +10,8 @@
 ## Стек
 
 Vite 8 + React 19 + React Router, Mantine 9, FSD-структура (`app / pages /
-widgets / entities / shared`). SSR нет. `index.html` — EJS-шаблон, данные
+widgets / entities / shared`). Бэкенд — NestJS, с 8.0.0 собирается `rspack`
+(было webpack). SSR нет. `index.html` — EJS-шаблон, данные
 подписки бэкенд вставляет base64-строкой в `<div id="sbpg" data-panel="...">`,
 их разбирает `app/layouts/root/root.layout.tsx`.
 
@@ -41,10 +42,18 @@ widgets / entities / shared`). SSR нет. `index.html` — EJS-шаблон, д
 `favicon.ico` и `apple-touch-icon.png` лежат в `frontend/public/` **в корне**, а
 не рядом с остальными ассетами (SVG-вариант — на CDN, как логотип). Причина в бэкенде:
 `check-assets-cookie.middleware.ts` требует куку `session` для всего, что
-начинается с `/assets` и `/locales`, и без неё не отдаёт 404, а рвёт сокет
-(`res.socket.destroy()`). Кука живёт 30 минут (`root.service.ts`), а Safari
+начинается с `/assets`, и без неё не отдаёт 404, а рвёт сокет
+(`res.socket.destroy()`). Кука живёт 30 минут (`webpage.service.ts`), а Safari
 качает иконки отдельно от страницы и часто позже — обрыв, и во вкладке остаётся
 предыдущая иконка. Корневые пути middleware не трогает.
+
+**С 8.0.0 корень статикой больше не отдаётся сам собой.** Апстрим выбросил
+`useStaticAssets` и монтирует `sirv` только на `/assets`, так что корневые
+иконки перестали существовать для сервера. В `backend/src/main.ts` рядом с этим
+`sirv` живёт наш блок: два поимённых маршрута (`/favicon.ico`,
+`/apple-touch-icon.png`) через `res.sendFile`. Именно поимённых, а не `sirv` на
+корне: в `frontend/dist/` рядом с иконками лежит `index.html` — сырой
+EJS-шаблон, отдавать его наружу нельзя.
 
 Остальное про иконки:
 
@@ -59,8 +68,8 @@ widgets / entities / shared`). SSR нет. `index.html` — EJS-шаблон, д
   кончики лепестков в них попадали бы. Собирается из
   `assets/favicon-512x512.png`.
 - Файл в корне `dist/` — потому что `publicDir` копируется как есть, а Dockerfile
-  кладёт `frontend/dist/` в `/opt/app/frontend`, откуда `useStaticAssets` отдаёт
-  его без префикса (`CUSTOM_SUB_PREFIX` на статику не действует).
+  кладёт `frontend/dist/` в `/opt/app/frontend`, откуда его и берёт `res.sendFile`
+  (`getAssetsPath()`), без префикса — `CUSTOM_SUB_PREFIX` на статику не действует.
 - В `assets/` остались `favicon-16/32/48/64/128/192/512` — они не подключены
   нигде и живут как исходники.
 - Safari кеширует иконки по домену цепко. Смена пути (`/assets/favicon.ico` →
@@ -279,9 +288,11 @@ npm run start:dev -- --host 0.0.0.0   # http://localhost:3334, с телефон
 `import.meta.env.DEV`, и Rollup вырезает и ветку, и оба модуля; проверяется
 `grep -r "Состояния подписки" dist/`.
 
-Проверка перед коммитом: `npx tsc --noEmit -p tsconfig.json` и `npx eslint src`
-(в `root.layout.tsx` есть одна унаследованная от апстрима ошибка сортировки
-импортов).
+Проверка перед коммитом: `npx tsc --noEmit -p tsconfig.json` и `npm run lint`.
+С 8.0.0 линтер — `oxlint` (eslint/prettier/stylelint апстрим выбросил), форматер —
+`oxfmt`. Предупреждения остаются два: апстримный `set-state-in-effect` в
+`main.page.connector.tsx` и `no-console` в нашем `scripts/generate-dev-fixtures.mjs`
+— это CLI-скрипт, ему положено печатать.
 
 ## CI/CD
 
@@ -289,7 +300,7 @@ npm run start:dev -- --host 0.0.0.0   # http://localhost:3334, с телефон
 (amd64/arm64, push-by-digest) → `docker buildx imagetools create`. Только GHCR,
 `secrets.GITHUB_TOKEN`, имя образа приводится к нижнему регистру.
 
-Релиз — пуш тега: `git tag 7.2.6-kimiko.N && git push origin 7.2.6-kimiko.N`,
+Релиз — пуш тега: `git tag 8.0.0-kimiko.N && git push origin 8.0.0-kimiko.N`,
 образ получает `:latest` и `:<tag>`. Запуск вручную по ветке даёт `:<branch>`.
 
 Коммиты подписываются `Co-Authored-By: Fable5 <noreply@anthropic.com>`.
