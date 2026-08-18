@@ -11,7 +11,12 @@
 
 Vite 8 + React 19 + React Router, Mantine 9, FSD-структура (`app / pages /
 widgets / entities / shared`). Бэкенд — NestJS, с 8.0.0 собирается `rspack`
-(было webpack). SSR нет. `index.html` — EJS-шаблон, данные
+(было webpack).
+
+`react-router` держим на 7.18.2 — выше апстримного пина 7.17.0, в котором
+открыты open redirect через обратный слеш в `<Link>`/`useNavigate` и DoS на
+матчинге маршрутов. Апстрим пинит точную версию, поэтому после каждого синка
+строку нужно поднимать заново и прогонять `npm audit` в обоих пакетах. SSR нет. `index.html` — EJS-шаблон, данные
 подписки бэкенд вставляет base64-строкой в `<div id="sbpg" data-panel="...">`,
 их разбирает `app/layouts/root/root.layout.tsx`.
 
